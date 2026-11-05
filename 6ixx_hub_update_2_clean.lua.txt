@@ -1,0 +1,1998 @@
+local players = game:GetService("Players")
+local runService = game:GetService("RunService")
+local userInputService = game:GetService("UserInputService")
+local teleportService = game:GetService("TeleportService")
+local replicatedStorage = game:GetService("ReplicatedStorage")
+local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/deividcomsono/Obsidian/main/Library.lua"))()
+local themeManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/deividcomsono/Obsidian/main/addons/ThemeManager.lua"))()
+local saveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/deividcomsono/Obsidian/main/addons/SaveManager.lua"))()
+local currentCamera = workspace.CurrentCamera
+local localPlayer = players.LocalPlayer
+local options = library.Options
+local toggles = library.Toggles
+local v1 = {}
+local v2 = {}
+local v3 = 0
+local v4 = setmetatable({}, { __mode = "k" })
+local v5 = 0
+local v6 = {}
+local v7 = false
+local v8 = "Flashing"
+local color = Color3.fromRGB(216, 100, 100)
+local v9 = 6
+local v10 = {}
+local v11 = false
+local v12 = {}
+local v13 = false
+local v14 = 16
+local v15 = false
+local v16 = 1.5
+local v17 = false
+local v18 = false
+local v19 = {}
+local v20 = 1
+local v21 = 0.01
+local v22 = false
+
+local v23 = {
+  turbotofu6668 = true,
+  s1ukrq = true,
+  dubesgetgenug = true,
+  batmanranger67 = true,
+  bojackmogmog = true,
+}
+
+local function f1()
+  local character = localPlayer.Character
+  return character and character:FindFirstChild("HumanoidRootPart")
+end
+
+local function f2(p1)
+  if not p1 then
+    return false
+  else
+    local lower = p1.Name:lower()
+    local lower2 = p1.DisplayName:lower()
+
+    for key, value in pairs(v23) do
+      if lower:find(key, 1, true) or lower2:find(key, 1, true) then
+        return true
+      end
+    end
+
+    return false
+  end
+end
+
+local function f3()
+  local character2 = localPlayer.Character
+  return character2 and character2:FindFirstChildOfClass("Humanoid")
+end
+
+local function f4(p2)
+  local v24 = v4[p2]
+
+  if v24 and p2 and p2.Parent then
+    p2.Size = v24.Size
+    p2.Transparency = v24.Transparency
+    p2.Material = v24.Material
+    p2.Color = v24.Color
+    p2.CanCollide = v24.CanCollide
+  end
+
+  v4[p2] = nil
+end
+
+local function f5(p3)
+  if not p3 or p3 == "" then
+    return nil
+  else
+    local lower3 = p3:lower()
+
+    for index, value2 in ipairs(players:GetPlayers()) do
+      if value2 ~= localPlayer
+        and (value2.Name:lower():sub(1, #lower3) == lower3
+          or value2.DisplayName:lower():sub(1, #lower3) == lower3) then
+        return value2
+      end
+    end
+
+    return nil
+  end
+end
+
+local function f6()
+  local v25 = f3()
+
+  if v25 then
+    currentCamera.CameraSubject = v25
+    currentCamera.CameraType = Enum.CameraType.Custom
+  end
+end
+
+local function f7()
+  local placeId = game.PlaceId
+  local jobId = game.JobId
+  library:Notify({ Title = "Rejoin", Description = "Rejoining same server...", Time = 2 })
+
+  task.spawn(function()
+    if not pcall(function()
+      if jobId and jobId ~= "" then
+        teleportService:TeleportToPlaceInstance(placeId, jobId, localPlayer)
+      else
+        teleportService:Teleport(placeId, localPlayer)
+      end
+    end) then
+      task.wait(1)
+      pcall((E(10560764, { O[1], O[2], O[3], O[4], O[5], O[6] })))
+    end
+  end)
+end
+
+local function f8(p4)
+  if #v1 == 0 then
+    return false
+  else
+    local lower4 = p4.Name:lower()
+    local lower5 = p4.DisplayName:lower()
+    local v26 = #v1
+    local count = 0
+
+    while true do
+      count = 1 + count
+
+      if not (v26 >= count) then
+        break
+      end
+
+      local v27 = v1[count]
+
+      if lower4:find(v27, 1, true) or lower5:find(v27, 1, true) then
+        return true
+      end
+    end
+
+    return false
+  end
+end
+
+local function f9(p5)
+  if f2(p5) then
+    return false
+  elseif #v2 > 0 then
+    local lower6 = p5.Name:lower()
+    local lower7 = p5.DisplayName:lower()
+    local v28 = #v2
+    local count2 = 0
+
+    while true do
+      count2 = 1 + count2
+
+      if not (v28 >= count2) then
+        break
+      end
+
+      local v29 = v2[count2]
+
+      if lower6:find(v29, 1, true) or lower7:find(v29, 1, true) then
+        return true
+      end
+    end
+
+    return false
+  else
+    if f8(p5) then
+      return false
+    end
+
+    return true
+  end
+end
+
+local function f10()
+  local v30 = f1()
+
+  if not v30 then
+    return
+  else
+    local v31 = nil
+    local getDescendants = workspace:GetDescendants()
+
+    for i = 1, #getDescendants do
+      local v32 = getDescendants[i]
+
+      if v32:IsA("Model") or v32:IsA("BasePart") then
+        local lower8 = v32.Name:lower()
+
+        if (lower8:find("cannon") or lower8:find("cañon")) and not lower8:find("fito") then
+          v31 = v32
+          break
+        end
+      end
+    end
+
+    if not v31 then
+      library:Notify({ Title = "Teleport to Canon", Description = "No cannon found!", Time = 2 })
+      return
+    else
+      local primaryPart = v31:IsA("Model") and v31.PrimaryPart or v31
+
+      if not primaryPart and v31:IsA("Model") then
+        local getDescendants2 = v31:GetDescendants()
+        local v33 = #getDescendants2
+        local count3 = 0
+
+        while true do
+          count3 = 1 + count3
+
+          if not (v33 >= count3) then
+            break
+          end
+
+          local v34 = getDescendants2[count3]
+
+          if v34:IsA("BasePart") then
+            primaryPart = v34
+            break
+          end
+        end
+      end
+
+      if not primaryPart then
+        library:Notify({
+          Title = "Teleport to Canon",
+          Description = "Cannon has no parts!",
+          Time = 2,
+        })
+
+        return
+      else
+        v30.CFrame = primaryPart.CFrame + Vector3.new(0, 3, 0)
+        task.wait(0.05)
+        local findFirstChildWhichIsA = v31:FindFirstChildWhichIsA("ProximityPrompt", true)
+
+        if findFirstChildWhichIsA then
+          fireproximityprompt(findFirstChildWhichIsA)
+        else
+          local findFirstChildWhichIsA2 = v31:FindFirstChildWhichIsA("ClickDetector", true)
+
+          if findFirstChildWhichIsA2 then
+            fireclickdetector(findFirstChildWhichIsA2)
+          else
+            firetouchinterest(v30, primaryPart, 0)
+            task.wait(0.02)
+            firetouchinterest(v30, primaryPart, 1)
+          end
+        end
+
+        library:Notify({
+          Title = "Teleport to Canon",
+          Description = "Teleported to canon",
+          Time = 1.5,
+        })
+
+        return
+      end
+    end
+  end
+end
+
+local function f11(p6)
+  if not p6 or f2(p6) then
+    if p6 and f2(p6) then
+      library:Notify({
+        Title = "Spectate",
+        Description = "Cannot spectate this player!",
+        Time = 2,
+      })
+    end
+
+    return
+  else
+    local character3 = p6.Character
+
+    if not character3 then
+      return
+    else
+      local humanoid = character3:FindFirstChildOfClass("Humanoid")
+
+      if humanoid then
+        currentCamera.CameraSubject = humanoid
+        currentCamera.CameraType = Enum.CameraType.Custom
+      end
+
+      return
+    end
+  end
+end
+
+local function f12()
+  for key2 in pairs(v4) do
+    f4(key2)
+  end
+end
+
+local function f13()
+  local character4 = localPlayer.Character
+
+  if not character4 then
+    return
+  end
+
+  local humanoid2 = character4:FindFirstChildOfClass("Humanoid")
+
+  if humanoid2 then
+    pcall(function() humanoid2.Health = 0 end)
+  else
+    pcall(function() character4:BreakJoints() end)
+  end
+end
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "6ixxESP"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = localPlayer:WaitForChild("PlayerGui")
+
+local function f14(p7)
+  if f2(p7) then
+    return nil
+  elseif v10[p7] then
+    return v10[p7]
+  else
+    local v35 = {}
+
+    local highlight = Instance.new("Highlight")
+    highlight.Name = p7.Name .. "_HL"
+    highlight.FillTransparency = 0.5
+    highlight.OutlineTransparency = 0
+    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    highlight.Parent = screenGui
+
+    v35.highlight = highlight
+
+    local billboardGui = Instance.new("BillboardGui")
+    billboardGui.Name = p7.Name .. "_BB"
+    billboardGui.Size = UDim2.new(0, 220, 0, 30)
+    billboardGui.StudsOffset = Vector3.new(0, 3, 0)
+    billboardGui.AlwaysOnTop = true
+    billboardGui.Parent = screenGui
+
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Size = UDim2.new(1, 0, 1, 0)
+    textLabel.BackgroundTransparency = 1
+    textLabel.Font = Enum.Font.SourceSansBold
+    textLabel.TextSize = 14
+    textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    textLabel.TextStrokeTransparency = 0
+    textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    textLabel.Text = p7.Name
+    textLabel.Parent = billboardGui
+
+    v35.billboard = billboardGui
+    v35.nameLabel = textLabel
+
+    v10[p7] = v35
+    return v35
+  end
+end
+
+local function f15(p8)
+  local v36 = v10[p8]
+
+  if v36 then
+    if v36.highlight then
+      v36.highlight:Destroy()
+    end
+
+    if v36.billboard then
+      v36.billboard:Destroy()
+    end
+
+    v10[p8] = nil
+  end
+end
+
+local function f16()
+  local character5 = localPlayer.Character
+
+  if not character5 then
+    return
+  else
+    local getDescendants3 = character5.GetDescendants
+    v12 = {}
+
+    for key3, value3 in pairs(getDescendants3(character5)) do
+      if value3:IsA("BasePart") and value3.Transparency == 0 then
+        table.insert(v12, value3)
+      end
+    end
+
+    return
+  end
+end
+
+local function f17()
+  local transparency = v11 and 0.5 or 0
+
+  for key4, value4 in pairs(v12) do
+    if value4 and value4.Parent then
+      value4.Transparency = transparency
+    end
+  end
+end
+
+local function f18(p9)
+  v11 = p9
+
+  if p9 then
+    f16()
+  end
+
+  f17()
+
+  if not p9 then
+    local v37 = f3()
+
+    if v37 then
+      v37.CameraOffset = Vector3.zero
+    end
+  end
+end
+
+local v38 = {
+  [Enum.HumanoidStateType.Physics] = true,
+  [Enum.HumanoidStateType.FallingDown] = true,
+  [Enum.HumanoidStateType.GettingUp] = true,
+  [Enum.HumanoidStateType.Ragdoll] = true,
+}
+
+local waitForChild
+
+task.spawn(function()
+  local waitForChild2 = replicatedStorage:WaitForChild("Events", 10)
+
+  if waitForChild2 then
+    waitForChild = waitForChild2:WaitForChild("RagdollState", 10)
+  end
+end)
+
+local connect
+
+local function f19()
+  if connect then
+    connect:Disconnect()
+  end
+
+  v5 = 0
+
+  connect = runService.Heartbeat:Connect(function(delta)
+    v5 = v5 + delta
+
+    if v5 < 0.05 then
+      return
+    else
+      v5 = 0
+      local character6 = localPlayer.Character
+
+      if not character6 then
+        return
+      else
+        local humanoid3 = character6:FindFirstChildOfClass("Humanoid")
+
+        if not humanoid3 or not humanoid3.Parent then
+          return
+        end
+
+        if waitForChild then
+          pcall(function() waitForChild:FireServer(false) end)
+        end
+
+        humanoid3:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+        humanoid3:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+
+        if v38[humanoid3:GetState()] then
+          humanoid3:ChangeState(Enum.HumanoidStateType.Running)
+        end
+
+        if humanoid3.PlatformStand then
+          humanoid3.PlatformStand = false
+        end
+
+        return
+      end
+    end
+  end)
+end
+
+local function f20(p10)
+  local getDescendants4 = p10:GetDescendants()
+  local v39 = #getDescendants4
+  local count4 = 0
+
+  while true do
+    count4 = 1 + count4
+
+    if not (count4 <= v39) then
+      break
+    end
+
+    local v40 = getDescendants4[count4]
+
+    if v40:IsA("LocalScript") then
+      local lower9 = v40.Name:lower()
+
+      if lower9:find("stun") or lower9:find("fall") or lower9:find("ragdoll") then
+        pcall(function() v40.Disabled = true end)
+      end
+    end
+  end
+end
+
+local function f21()
+  if connect then
+    connect:Disconnect()
+    connect = nil
+  end
+
+  local v41 = f3()
+
+  if v41 then
+    v41:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, true)
+    v41:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true)
+  end
+end
+
+local function f22(p11)
+  local waitForChild3 = p11:WaitForChild("Humanoid", 5)
+
+  if waitForChild3 then
+    waitForChild3:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+    waitForChild3:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+  end
+
+  f20(p11)
+end
+
+local remotes = replicatedStorage:FindFirstChild("Remotes") or replicatedStorage
+local setRPNameColor = remotes:FindFirstChild("SetRPNameColor")
+
+local setRPBioColor = remotes:FindFirstChild("SetRPBioColor")
+  or remotes:FindFirstChild("SetBioColor")
+
+local setRPRoleColor = remotes:FindFirstChild("SetRPRoleColor")
+
+local setRoleColor = setRPRoleColor
+setRoleColor = setRPRoleColor or remotes:FindFirstChild("SetRoleColor")
+
+local connect2
+
+local function f23()
+  if connect2 then
+    connect2:Disconnect()
+    connect2 = nil
+  end
+end
+
+local v42 = setRoleColor
+
+local function f24()
+  if connect2 then
+    connect2:Disconnect()
+  end
+
+  connect2 = runService.Heartbeat:Connect(function()
+    if not v7 then
+      return
+    end
+
+    local color2 = nil
+
+    if v8 == "Full Rainbow" then
+      local v43 = tick()
+      color2 = Color3.fromHSV(v43 % v9 / v9, 1, 1)
+    else
+      color2 = math.floor(tick() * v9) % 2 == 0 and color or Color3.fromRGB(0, 0, 0)
+    end
+
+    pcall(function()
+      if setRPNameColor then
+        setRPNameColor:FireServer(color2)
+      end
+
+      if setRPBioColor then
+        setRPBioColor:FireServer(color2)
+      end
+
+      if v42 then
+        v42:FireServer(color2)
+      end
+    end)
+  end)
+end
+
+local grab
+
+task.spawn(function()
+  task.wait(1)
+  pcall(function() grab = replicatedStorage.Packages.Knit.Services.CombatService.RF.Grab end)
+end)
+
+local f25
+
+local function f26()
+  if not v18 then
+    return
+  else
+    local character7 = localPlayer.Character
+    local humanoidRootPart = character7 and character7:FindFirstChild("HumanoidRootPart")
+
+    if not humanoidRootPart then
+      return
+    else
+      local v44 = f25()
+
+      if not v44 or not v44.Character then
+        return
+      else
+        local humanoidRootPart2 = v44.Character:FindFirstChild("HumanoidRootPart")
+
+        if not humanoidRootPart2 then
+          return
+        end
+
+        humanoidRootPart.CFrame = humanoidRootPart2.CFrame
+        return
+      end
+    end
+  end
+end
+
+function f25()
+  local character8 = localPlayer.Character
+  local humanoidRootPart3 = character8 and character8:FindFirstChild("HumanoidRootPart")
+
+  if #v19 == 0 then
+    if not humanoidRootPart3 then
+      return nil
+    else
+      local huge = math.huge
+      local v45 = nil
+      local getPlayers = players:GetPlayers()
+
+      for j = 1, #getPlayers do
+        local v46 = getPlayers[j]
+
+        if v46 ~= localPlayer and v46.Character then
+          local humanoidRootPart4 = v46.Character:FindFirstChild("HumanoidRootPart")
+          local humanoid4 = v46.Character:FindFirstChildOfClass("Humanoid")
+
+          if humanoidRootPart4 and humanoid4 and humanoid4.Health > 0 then
+            local magnitude = (humanoidRootPart4.Position - humanoidRootPart3.Position).Magnitude
+
+            if magnitude < huge then
+              v45 = v46
+              huge = magnitude
+            end
+          end
+        end
+      end
+
+      return v45
+    end
+  else
+    if v20 > #v19 then
+      v20 = 1
+    end
+
+    local lower10 = v19[v20]:lower()
+    v20 = v20 + 1
+    local getPlayers2 = players:GetPlayers()
+    local v47 = #getPlayers2
+    local count5 = 0
+
+    while true do
+      count5 = 1 + count5
+
+      if not (count5 <= v47) then
+        break
+      end
+
+      local v48 = getPlayers2[count5]
+
+      if v48 ~= localPlayer
+        and (v48.Name:lower():find(lower10, 1, true)
+          or v48.DisplayName and v48.DisplayName:lower():find(lower10, 1, true)) then
+        return v48
+      end
+    end
+
+    return nil
+  end
+end
+
+local function f27()
+  if not grab then
+    pcall(function() grab = replicatedStorage.Packages.Knit.Services.CombatService.RF.Grab end)
+  end
+
+  if not grab then
+    return
+  end
+
+  pcall(function() grab:InvokeServer() end)
+end
+
+local createWindow = library:CreateWindow({
+  Title = "6ixx Hub",
+  Footer = "Autoclicker | Head Sit | Hitbox | Anti-Ragdoll | Rainbow | Invis | Canon | ESP | Respawn | Spectate | Movement | Combat | Rejoin",
+  NotifyOnError = true,
+  ShowCustomCursor = true,
+})
+
+local v49 = {
+  Main = createWindow:AddTab("Main", "house"),
+  Combat = createWindow:AddTab("Combat", "swords"),
+  ["UI Settings"] = createWindow:AddTab("UI Settings", "settings"),
+}
+
+if library.Colors and library.Colors.Scheme then
+  library.Colors.Scheme = Color3.fromRGB(216, 100, 100)
+end
+
+if library.UpdateColors then
+  pcall(function() library:UpdateColors() end)
+end
+
+local addLeftGroupbox = v49.Main:AddLeftGroupbox("Autoclicker", "mouse-pointer-click")
+
+addLeftGroupbox:AddToggle("AutoClicker", {
+  Text = "Enable Autoclicker",
+  Default = false,
+  Callback = function() v3 = 0 end,
+}):AddKeyPicker("AutoClickKey", {
+  Default = "F4",
+  Mode = "Toggle",
+  SyncToggleState = true,
+  Text = "Autoclicker",
+})
+
+addLeftGroupbox:AddSlider("ClickCPS", {
+  Text = "Click Speed",
+  Default = 100,
+  Min = 1,
+  Max = 100,
+  Rounding = 0,
+  Suffix = " CPS",
+})
+
+addLeftGroupbox:AddLabel("Autoclicker only works when Roblox is focused", true)
+
+local addLeftGroupbox2 = v49.Main:AddLeftGroupbox("Server", "server")
+
+addLeftGroupbox2:AddButton({
+  Text = "Rejoin Same Server",
+  Func = function() f7() end,
+  DoubleClick = false,
+  Tooltip = "Rejoins the exact same server you're currently in",
+}):AddKeyPicker("RejoinKey", {
+  Default = "F10",
+  Mode = "Press",
+  Text = "Rejoin",
+})
+
+addLeftGroupbox2:AddLabel("Customize key in Keybind Menu (default: F10)", true)
+
+v49.Main:AddLeftGroupbox("Teleport to Canon", "rocket"):AddButton({
+  Text = "Teleport to Canon",
+  Func = function() f10() end,
+  DoubleClick = false,
+  Tooltip = "Finds the canon, teleports you to it and activates it",
+}):AddKeyPicker("CanonKey", {
+  Default = "F5",
+  Mode = "Press",
+  Text = "Teleport to Canon",
+})
+
+v49.Main:AddLeftGroupbox("Respawn", "refresh-cw"):AddButton({
+  Text = "Respawn",
+  Func = function() f13() end,
+  DoubleClick = false,
+  Tooltip = "Kill your character to respawn instantly",
+}):AddKeyPicker("RespawnKey", {
+  Default = "F6",
+  Mode = "Press",
+  Text = "Respawn",
+})
+
+local addLeftGroupbox3 = v49.Main:AddLeftGroupbox("Head Sit", "user")
+
+addLeftGroupbox3:AddToggle("HeadSit", {
+  Text = "Enable Head Sit",
+  Default = false,
+  Callback = function(value5)
+    if not value5 then
+      local v50 = f3()
+
+      if v50 then
+        v50.Sit = false
+      end
+    end
+  end,
+}):AddKeyPicker("HeadSitKey", {
+  Default = "None",
+  Mode = "Toggle",
+  SyncToggleState = true,
+  Text = "Head Sit",
+})
+
+local v51
+
+addLeftGroupbox3:AddInput("SitTarget", {
+  Default = "",
+  Text = "Target Player",
+  Placeholder = "Name or display name...",
+  ClearTextOnFocus = false,
+  Callback = function(value6)
+    v51 = f5(value6)
+
+    if not v51 and value6 ~= "" then
+      local getPlayers3 = players:GetPlayers()
+
+      for k = 1, #getPlayers3 do
+        local v52 = getPlayers3[k]
+
+        if v52 ~= localPlayer
+          and (v52.Name:lower() == value6:lower() or v52.DisplayName:lower() == value6:lower()) then
+          v51 = v52
+          break
+        end
+      end
+    end
+
+    if not v51 then
+      local v53 = f3()
+
+      if v53 then
+        v53.Sit = false
+      end
+    end
+  end,
+})
+
+addLeftGroupbox3:AddSlider("SitHeight", {
+  Text = "Height Offset (Up/Down)",
+  Default = 1.7,
+  Min = -10,
+  Max = 25,
+  Rounding = 1,
+})
+
+addLeftGroupbox3:AddSlider("SitSideOffset", {
+  Text = "Side Offset (Left/Right)",
+  Default = 0,
+  Min = -25,
+  Max = 25,
+  Rounding = 1,
+})
+
+addLeftGroupbox3:AddSlider("SitForwardOffset", {
+  Text = "Forward Offset (Front/Back)",
+  Default = 0,
+  Min = -25,
+  Max = 25,
+  Rounding = 1,
+})
+
+addLeftGroupbox3:AddDropdown("SitOrientMode", {
+  Default = "Relative to Target",
+  Values = { "Relative to Target", "World Aligned" },
+  Text = "Side Direction Mode",
+})
+
+v49.Main:AddLeftGroupbox("Anti-Ragdoll", "shield"):AddToggle("AntiRagdoll", {
+  Text = "Enable Anti-Ragdoll",
+  Default = false,
+  Callback = function(value7)
+    if value7 then
+      f19()
+
+      if localPlayer.Character then
+        f22(localPlayer.Character)
+      end
+    else
+      f21()
+    end
+  end,
+}):AddKeyPicker("AntiRagdollKey", {
+  Default = "None",
+  Mode = "Toggle",
+  SyncToggleState = true,
+  Text = "Anti-Ragdoll",
+})
+
+local addLeftGroupbox4 = v49.Main:AddLeftGroupbox("Invisibility (Void)", "eye-off")
+
+addLeftGroupbox4:AddToggle("Invisibility", {
+  Text = "Enable Invisibility",
+  Default = false,
+  Callback = function(value8) f18(value8) end,
+}):AddKeyPicker("InvisKey", {
+  Default = "V",
+  Mode = "Toggle",
+  SyncToggleState = true,
+  Text = "Invisibility",
+})
+
+addLeftGroupbox4:AddLabel("Customize key in Keybind Menu (default: V)", true)
+
+local addLeftGroupbox5 = v49.Main:AddLeftGroupbox("Rainbow Name", "sparkles")
+
+addLeftGroupbox5:AddToggle("RainbowName", {
+  Text = "Enable Rainbow Name",
+  Default = false,
+  Callback = function(value9)
+    v7 = value9
+
+    if value9 then
+      f24()
+    else
+      f23()
+    end
+  end,
+}):AddKeyPicker("RainbowKey", {
+  Default = "None",
+  Mode = "Toggle",
+  SyncToggleState = true,
+  Text = "Rainbow Name",
+})
+
+addLeftGroupbox5:AddDropdown("RainbowModeSelect", {
+  Default = "Flashing",
+  Values = { "Flashing", "Full Rainbow" },
+  Text = "Rainbow Mode",
+  Callback = function(value10) v8 = value10 end,
+})
+
+addLeftGroupbox5:AddInput("RainbowColorPicker", {
+  Default = "216, 100, 100",
+  Text = "Flash Color (R, G, B)",
+  Placeholder = "r, g, b (e.g. 216, 100, 100)",
+  ClearTextOnFocus = false,
+  Callback = function(value11)
+    local v54, v55, v56 = value11:match("(%d+)%s*,%s*(%d+)%s*,%s*(%d+)")
+
+    if v54 and v55 and v56 then
+      color = Color3.fromRGB(tonumber(v54), tonumber(v55), tonumber(v56))
+    end
+  end,
+})
+
+addLeftGroupbox5:AddSlider("RainbowSpeed", {
+  Text = "Transition Speed",
+  Default = 6,
+  Min = 0.5,
+  Max = 20,
+  Rounding = 1,
+  Callback = function(value12) v9 = value12 end,
+})
+
+local addRightGroupbox = v49.Main:AddRightGroupbox("Player ESP", "eye")
+
+addRightGroupbox:AddToggle("ESP", {
+  Text = "Enable ESP",
+  Default = false,
+  Callback = function(value13)
+    if not value13 then
+      local getPlayers4 = players:GetPlayers()
+      local v57 = #getPlayers4
+      local count6 = 0
+
+      while true do
+        count6 = 1 + count6
+
+        if not (count6 <= v57) then
+          break
+        end
+
+        f15(getPlayers4[count6])
+      end
+    end
+  end,
+}):AddKeyPicker("ESPKey", {
+  Default = "F7",
+  Mode = "Toggle",
+  SyncToggleState = true,
+  Text = "ESP",
+})
+
+addRightGroupbox:AddSlider("ESPFillTransparency", {
+  Text = "Highlight Opacity",
+  Default = 0.5,
+  Min = 0,
+  Max = 1,
+  Rounding = 1,
+})
+
+addRightGroupbox:AddSlider("ESPNameSize", {
+  Text = "Name Size",
+  Default = 14,
+  Min = 8,
+  Max = 24,
+  Rounding = 0,
+})
+
+addRightGroupbox:AddToggle("ESPDistance", { Text = "Show Distance", Default = true })
+
+local addRightGroupbox2 = v49.Main:AddRightGroupbox("Spectate", "video")
+local v58
+
+addRightGroupbox2:AddInput("SpectateName", {
+  Default = "",
+  Text = "Player to Spectate",
+  Placeholder = "Name or display name...",
+  ClearTextOnFocus = false,
+  Callback = function(value14)
+    v58 = f5(value14)
+
+    if v58 and f2(v58) then
+      v58 = nil
+
+      library:Notify({
+        Title = "Spectate",
+        Description = "Cannot spectate this player!",
+        Time = 2,
+      })
+
+      return
+    end
+
+    if toggles.Spectate and toggles.Spectate.Value and v58 then
+      f11(v58)
+    end
+  end,
+})
+
+addRightGroupbox2:AddToggle("Spectate", {
+  Text = "Enable Spectate",
+  Default = false,
+  Callback = function(value15)
+    if value15 then
+      if not v58 or f2(v58) then
+        library:Notify({
+          Title = "Spectate",
+          Description = "Invalid or restricted player!",
+          Time = 2,
+        })
+
+        return
+      end
+
+      f11(v58)
+      return
+    end
+
+    f6()
+  end,
+}):AddKeyPicker("SpectateKey", {
+  Default = "F8",
+  Mode = "Toggle",
+  SyncToggleState = true,
+  Text = "Spectate",
+})
+
+addRightGroupbox2:AddButton({
+  Text = "Next Player",
+  Func = function()
+    local v59 = {}
+    local getPlayers5 = players:GetPlayers()
+    local v60 = #getPlayers5
+    local count7 = 0
+
+    while true do
+      count7 = 1 + count7
+
+      if not (v60 >= count7) then
+        break
+      end
+
+      local v61 = getPlayers5[count7]
+
+      if v61 ~= localPlayer and not f2(v61) then
+        table.insert(v59, v61)
+      end
+    end
+
+    if #v59 == 0 then
+      return
+    else
+      local v62 = 1
+
+      for index2, value16 in ipairs(v59) do
+        if value16 == v58 then
+          v62 = index2 + 1
+          break
+        end
+      end
+
+      if v62 > #v59 then
+        v62 = 1
+      end
+
+      v58 = v59[v62]
+
+      if options.SpectateName then
+        options.SpectateName:SetValue(v58.Name)
+      end
+
+      if toggles.Spectate.Value then
+        f11(v58)
+      end
+
+      return
+    end
+  end,
+  DoubleClick = false,
+})
+
+local addRightGroupbox3 = v49.Main:AddRightGroupbox("Player Hitbox", "crosshair")
+
+addRightGroupbox3:AddToggle("HitboxEnabled", {
+  Text = "Enable Hitbox",
+  Default = false,
+  Callback = function(value17)
+    if not value17 then
+      f12()
+
+      for key5, value18 in pairs(v6) do
+        if value18 and value18.Parent then
+          value18.Size = Vector3.new(2, 2, 1)
+          value18.Transparency = 1
+          value18.Material = Enum.Material.Plastic
+          value18.CanCollide = false
+        end
+      end
+    end
+  end,
+}):AddKeyPicker("HitboxKey", {
+  Default = "None",
+  Mode = "Toggle",
+  SyncToggleState = true,
+  Text = "Hitbox",
+})
+
+addRightGroupbox3:AddInput("HitboxTargetName", {
+  Default = "",
+  Text = "Target Names (Comma separated)",
+  Placeholder = "name1, displayname2...",
+  ClearTextOnFocus = false,
+  Tooltip = "Supports both usernames and display names separated by commas. Leave empty for all.",
+  Callback = function(value19)
+    v2 = {}
+
+    for match in value19:gmatch("[^,]+") do
+      local sS = match:match("^%s*(.-)%s*$")
+
+      if sS ~= "" then
+        table.insert(v2, sS:lower())
+      end
+    end
+
+    f12()
+  end,
+})
+
+addRightGroupbox3:AddInput("AvoidTargets", {
+  Default = "",
+  Text = "Avoid Players",
+  Placeholder = "name1, name2, name3...",
+  ClearTextOnFocus = false,
+  Tooltip = "These players get NO hitbox",
+  Callback = function(value20)
+    v1 = {}
+
+    for match2 in value20:gmatch("[^,]+") do
+      local sS2 = match2:match("^%s*(.-)%s*$")
+
+      if sS2 ~= "" then
+        table.insert(v1, sS2:lower())
+      end
+    end
+
+    f12()
+  end,
+})
+
+addRightGroupbox3:AddSlider("HitboxSize", {
+  Text = "Hitbox Size",
+  Default = 10,
+  Min = 2,
+  Max = 50,
+  Rounding = 0,
+})
+
+addRightGroupbox3:AddSlider("HitboxTransparency", {
+  Text = "Visibility (0=Solid, 1=Hidden)",
+  Default = 0.3,
+  Min = 0,
+  Max = 1,
+  Rounding = 1,
+})
+
+addRightGroupbox3:AddToggle("HitboxVisible", { Text = "Show Hitbox", Default = true })
+
+local addRightGroupbox4 = v49.Main:AddRightGroupbox("Movement", "footprints")
+
+addRightGroupbox4:AddToggle("WalkSpeedEnabled", {
+  Text = "Enable WalkSpeed",
+  Default = false,
+  Callback = function(value21)
+    v13 = value21
+
+    if not value21 then
+      local v63 = f3()
+
+      if v63 then
+        v63.WalkSpeed = 16
+      end
+    end
+  end,
+}):AddKeyPicker("WalkSpeedKey", {
+  Default = "None",
+  Mode = "Toggle",
+  SyncToggleState = true,
+  Text = "WalkSpeed",
+})
+
+addRightGroupbox4:AddSlider("WalkSpeedValue", {
+  Text = "WalkSpeed (0-23)",
+  Default = 16,
+  Min = 0,
+  Max = 23,
+  Rounding = 0,
+  Suffix = " ws",
+  Callback = function(value22) v14 = value22 end,
+})
+
+addRightGroupbox4:AddButton("Normal (16)", function()
+  if options.WalkSpeedValue then
+    options.WalkSpeedValue:SetValue(16)
+  end
+
+  v14 = 16
+end)
+
+addRightGroupbox4:AddButton("Max (23)", function()
+  if options.WalkSpeedValue then
+    options.WalkSpeedValue:SetValue(23)
+  end
+
+  v14 = 23
+end)
+
+addRightGroupbox4:AddButton("Reset (0)", function()
+  if options.WalkSpeedValue then
+    options.WalkSpeedValue:SetValue(0)
+  end
+
+  v14 = 0
+end)
+
+addRightGroupbox4:AddToggle("CFrameWalkEnabled", {
+  Text = "Enable CFrame Walk",
+  Default = false,
+  Callback = function(value23) v15 = value23 end,
+}):AddKeyPicker("CFrameWalkKey", {
+  Default = "None",
+  Mode = "Toggle",
+  SyncToggleState = true,
+  Text = "CFrame Walk",
+})
+
+addRightGroupbox4:AddSlider("CFrameWalkSpeed", {
+  Text = "CFrame Speed Multiplier",
+  Default = 1.5,
+  Min = 0.5,
+  Max = 5,
+  Rounding = 1,
+  Suffix = "x",
+  Callback = function(value24) v16 = value24 end,
+})
+
+local addLeftGroupbox6 = v49.Combat:AddLeftGroupbox("Fighting (Rocket / Push)", "zap")
+
+addLeftGroupbox6:AddToggle("FightingToggle", {
+  Text = "Enable Fighting",
+  Default = false,
+  Callback = function(value25)
+    if v22 then
+      return
+    end
+
+    localPlayer:SetAttribute("Fighting", value25)
+  end,
+}):AddKeyPicker("FightingKey", {
+  Default = "X",
+  Mode = "Toggle",
+  SyncToggleState = true,
+  Text = "Fighting",
+})
+
+addLeftGroupbox6:AddLabel("Toggles the 'Fighting' attribute (rocket fly + push)", true)
+
+local addLeftGroupbox7 = v49.Combat:AddLeftGroupbox("Auto Grab / TP to Target", "hand")
+
+addLeftGroupbox7:AddToggle("GrabSpam", {
+  Text = "Spam Grab",
+  Default = false,
+  Callback = function(value26) v17 = value26 end,
+}):AddKeyPicker("GrabSpamKey", {
+  Default = "G",
+  Mode = "Toggle",
+  SyncToggleState = true,
+  Text = "Spam Grab",
+})
+
+addLeftGroupbox7:AddButton({
+  Text = "Grab Once",
+  Func = function() f27() end,
+  DoubleClick = false,
+})
+
+addLeftGroupbox7:AddToggle("GrabTPMode", {
+  Text = "TP Mode (enables teleport)",
+  Default = false,
+  Callback = function(value27) v18 = value27 end,
+})
+
+addLeftGroupbox7:AddButton({
+  Text = "Teleport to Target",
+  Func = function() f26() end,
+  DoubleClick = false,
+  Tooltip = "Only teleports while TP Mode is ON",
+}):AddKeyPicker("GrabTPKey", {
+  Default = "T",
+  Mode = "Press",
+  Text = "TP to Target",
+})
+
+addLeftGroupbox7:AddSlider("GrabDelay", {
+  Text = "Spam Delay",
+  Default = 0.01,
+  Min = 0,
+  Max = 0.5,
+  Rounding = 2,
+  Callback = function(value28) v21 = value28 end,
+})
+
+addLeftGroupbox7:AddInput("GrabTargetInput", {
+  Default = "",
+  Text = "Targets (comma separated)",
+  Placeholder = "name1, name2...",
+  ClearTextOnFocus = false,
+  Tooltip = "Empty = nearest player",
+  Callback = function(value29)
+    v19 = {}
+
+    for match3 in value29:gmatch("[^,]+") do
+      local sS3 = match3:match("^%s*(.-)%s*$")
+
+      if sS3 ~= "" then
+        table.insert(v19, sS3)
+      end
+    end
+  end,
+})
+
+addLeftGroupbox7:AddLabel("Empty target list = nearest player", true)
+
+local screenGui2 = Instance.new("ScreenGui")
+screenGui2.Name = "6ixxCircle"
+screenGui2.ResetOnSpawn = false
+screenGui2.DisplayOrder = 999
+screenGui2.Parent = localPlayer:WaitForChild("PlayerGui")
+
+local minCircle = Instance.new("TextButton")
+minCircle.Name = "MinCircle"
+minCircle.Size = UDim2.new(0, 52, 0, 52)
+minCircle.Position = UDim2.new(0, 20, 0.5, -26)
+minCircle.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+minCircle.Text = "T"
+minCircle.TextColor3 = Color3.fromRGB(255, 30, 30)
+minCircle.Font = Enum.Font.GothamBold
+minCircle.TextSize = 32
+minCircle.AutoButtonColor = false
+minCircle.Visible = false
+minCircle.Active = true
+minCircle.Parent = screenGui2
+
+Instance.new("UICorner", minCircle).CornerRadius = UDim.new(1, 0)
+
+local uiStroke = Instance.new("UIStroke")
+uiStroke.Thickness = 2.5
+uiStroke.Color = Color3.fromRGB(255, 30, 30)
+
+local function f28()
+  local v64 = {}
+
+  pcall(function()
+    if gethui then
+      table.insert(v64, gethui())
+    end
+  end)
+
+  local v65 = game
+  table.insert(v64, v65:GetService("CoreGui"))
+  local playerGui = localPlayer:FindFirstChild("PlayerGui")
+
+  if playerGui then
+    table.insert(v64, playerGui)
+  end
+
+  local v66 = #v64
+  local count8 = 0
+
+  while true do
+    count8 = 1 + count8
+
+    if not (v66 >= count8) then
+      break
+    end
+
+    local v67 = v64[count8]
+
+    if v67 then
+      local getChildren = v67:GetChildren()
+      local v68 = #getChildren
+      local count9 = 0
+
+      while true do
+        count9 = 1 + count9
+
+        if not (v68 >= count9) then
+          break
+        end
+
+        local v69 = getChildren[count9]
+
+        if v69:IsA("ScreenGui") and v69 ~= screenGui and v69 ~= screenGui2 then
+          local getDescendants5 = v69:GetDescendants()
+
+          for m = 1, #getDescendants5 do
+            local v70 = getDescendants5[m]
+
+            if v70:IsA("TextLabel") and v70.Text == "6ixx Hub" then
+              return v69
+            end
+          end
+        end
+      end
+    end
+  end
+
+  return nil
+end
+
+uiStroke.Parent = minCircle
+local v71
+
+local function f29()
+  if not v71 then
+    v71 = f28()
+  end
+
+  if v71 then
+    v71.Enabled = false
+  end
+
+  minCircle.Visible = true
+end
+
+local function f30()
+  if not v71 then
+    v71 = f28()
+  end
+
+  if v71 then
+    v71.Enabled = true
+  end
+
+  minCircle.Visible = false
+end
+
+local function f31()
+  if v71 and v71.Enabled == false then
+    f30()
+  else
+    f29()
+  end
+end
+
+local v72 = false
+local v73 = false
+local position, position2
+
+minCircle.InputBegan:Connect(function(input)
+  if input.UserInputType == Enum.UserInputType.MouseButton1
+    or input.UserInputType == Enum.UserInputType.Touch then
+    v72 = true
+    v73 = false
+    position = input.Position
+    position2 = minCircle.Position
+  end
+end)
+
+userInputService.InputChanged:Connect(function(input2)
+  if v72
+    and (input2.UserInputType == Enum.UserInputType.MouseMovement
+      or input2.UserInputType == Enum.UserInputType.Touch) then
+    local v74 = input2.Position - position
+
+    if math.abs(v74.X) > 4 or math.abs(v74.Y) > 4 then
+      v73 = true
+    end
+
+    minCircle.Position = UDim2.new(
+      position2.X.Scale, position2.X.Offset + v74.X, position2.Y.Scale,
+      position2.Y.Offset + v74.Y
+    )
+  end
+end)
+
+userInputService.InputEnded:Connect(function(input3)
+  if input3.UserInputType == Enum.UserInputType.MouseButton1
+    or input3.UserInputType == Enum.UserInputType.Touch then
+    if v72 and not v73 then
+      f30()
+    end
+
+    v72 = false
+  end
+end)
+
+task.spawn(function()
+  while true do
+    if toggles.AutoClicker.Value then
+      v3 = v3 + task.wait() * options.ClickCPS.Value
+      local v75 = math.floor(v3)
+      v3 = v3 - v75
+
+      if mouse1click then
+        local v76 = math.min(v75, 10)
+        local count10 = 0
+
+        while true do
+          count10 = 1 + count10
+
+          if not (v76 >= count10) then
+            break
+          end
+
+          pcall(function() mouse1click() end)
+        end
+      end
+    else
+      task.wait(0.1)
+    end
+  end
+end)
+
+task.spawn(function()
+  while true do
+    if v17 then
+      f27()
+
+      if v21 > 0 then
+        task.wait(v21)
+      else
+        task.wait()
+      end
+    else
+      task.wait(0.05)
+    end
+  end
+end)
+
+library:GiveSignal(runService.Heartbeat:Connect(function(delta2)
+  local character9 = localPlayer.Character
+  local v77 = f1()
+  local v78 = f3()
+
+  if v13 and v78 then
+    if v78.WalkSpeed ~= v14 then
+      v78.WalkSpeed = v14
+    end
+  end
+
+  if v15 and v77 and v78 and v78.MoveDirection.Magnitude > 0 then
+    local moveDirection = v78.MoveDirection
+    v77.CFrame = v77.CFrame + moveDirection * (v16 * delta2 * 45)
+
+    v77.AssemblyLinearVelocity = Vector3.new(
+      moveDirection.X * 16 * v16, v77.AssemblyLinearVelocity.Y, moveDirection.Z * 16 * v16
+    )
+  end
+
+  local position3
+
+  if toggles.HeadSit.Value and v51 then
+    local character10 = v51.Character
+
+    if character10 then
+      local head = character10:FindFirstChild("Head")
+      local humanoid5 = character10:FindFirstChildOfClass("Humanoid")
+      local humanoidRootPart5 = character10:FindFirstChild("HumanoidRootPart")
+
+      if head and v77 and v78 and humanoid5 and humanoidRootPart5 then
+        if not v78.Sit then
+          v78.Sit = true
+        end
+
+        local value30 = options.SitHeight.Value
+        local value31 = options.SitSideOffset.Value
+        local value32 = options.SitForwardOffset.Value
+
+        if options.SitOrientMode.Value == "World Aligned" then
+          position3 = head.Position + Vector3.new(value31, value30, value32)
+        else
+          position3 = (CFrame.new(head.Position)
+            * (humanoidRootPart5.CFrame - humanoidRootPart5.CFrame.Position)
+            * CFrame.new(value31, value30, value32)).Position
+        end
+
+        v77.CFrame = CFrame.new(position3)
+        v77.Velocity = humanoid5.MoveDirection * 16
+      end
+    elseif v78 and v78.Sit then
+      v78.Sit = false
+    end
+  end
+
+  if toggles.Spectate.Value and v58 then
+    if f2(v58) then
+      f6()
+    else
+      local character11 = v58.Character
+
+      local humanoid6 = character11
+      humanoid6 = character11 and character11:FindFirstChildOfClass("Humanoid")
+
+      if humanoid6 and currentCamera.CameraSubject ~= humanoid6 then
+        currentCamera.CameraSubject = humanoid6
+      end
+    end
+  end
+end))
+
+library:GiveSignal(runService.Heartbeat:Connect(function()
+  if not v11 then
+    return
+  else
+    local v79 = f3()
+    local v80 = not v79
+    local v81 = f1()
+
+    if v80 or not v81 then
+      return
+    else
+      local cframe = v81.CFrame
+      local cameraOffset = v79.CameraOffset
+      local v82 = cframe * CFrame.new(0, -200000, 0)
+      v81.CFrame = v82
+      v79.CameraOffset = v82:ToObjectSpace(CFrame.new(cframe.Position)).Position
+      runService.RenderStepped:Wait()
+      v81.CFrame = cframe
+      v79.CameraOffset = cameraOffset
+      return
+    end
+  end
+end))
+
+local v83 = 0
+
+library:GiveSignal(runService.RenderStepped:Connect(function(delta3)
+  local value33 = toggles.HitboxEnabled.Value
+  local value34 = options.HitboxSize.Value
+  local value35 = toggles.HitboxVisible.Value
+  local value36 = options.HitboxTransparency and options.HitboxTransparency.Value or 0.3
+  local getPlayers6 = players:GetPlayers()
+  local v84 = #getPlayers6
+  local count11 = 0
+
+  while true do
+    count11 = 1 + count11
+
+    if not (count11 <= v84) then
+      break
+    end
+
+    local v85 = getPlayers6[count11]
+
+    if v85 ~= localPlayer and v85.Character then
+      local humanoidRootPart6 = v85.Character:FindFirstChild("HumanoidRootPart")
+
+      if humanoidRootPart6 then
+        v6[v85] = humanoidRootPart6
+      end
+    end
+  end
+
+  for key6, value37 in pairs(v6) do
+    if value37 and value37.Parent then
+      if value33 and f9(key6) and not f2(key6) then
+        if not v4[value37] then
+          v4[value37] = {
+            Size = value37.Size,
+            Transparency = value37.Transparency,
+            Material = value37.Material,
+            Color = value37.Color,
+            CanCollide = value37.CanCollide,
+          }
+        end
+
+        value37.Size = Vector3.new(value34, value34, value34)
+        value37.CanCollide = false
+        value37.Transparency = value35 and value36 or 1
+        value37.Material = value35 and Enum.Material.Neon or Enum.Material.Plastic
+
+        if value35 then
+          value37.Color = Color3.fromRGB(255, 0, 0)
+        end
+      elseif v4[value37] then
+        f4(value37)
+      else
+        value37.Size = Vector3.new(2, 2, 1)
+        value37.Transparency = 1
+        value37.Material = Enum.Material.Plastic
+        value37.CanCollide = false
+      end
+    else
+      v6[key6] = nil
+    end
+  end
+
+  v83 = v83 + delta3
+
+  if v83 < 0.05 then
+    return
+  end
+
+  v83 = 0
+
+  if not toggles.ESP.Value then
+    return
+  else
+    local value38 = options.ESPFillTransparency and options.ESPFillTransparency.Value or 0.5
+    local value39 = options.ESPNameSize and options.ESPNameSize.Value or 14
+    local value40 = toggles.ESPDistance.Value
+    local v86 = f1()
+
+    for n = 1, #getPlayers6 do
+      local v87 = getPlayers6[n]
+
+      if v87 == localPlayer or f2(v87) then
+        if v10[v87] then
+          f15(v87)
+        end
+      else
+        local v88 = f14(v87)
+
+        if not v88 then
+        else
+          local character12 = v87.Character
+          local head2 = character12 and character12:FindFirstChild("Head")
+
+          local humanoidRootPart7 = character12
+          humanoidRootPart7 = character12 and character12:FindFirstChild("HumanoidRootPart")
+
+          local v89 = not character12
+          local v90 = humanoidRootPart7
+
+          if v89 or not head2 or not v90 then
+            v88.highlight.Enabled = false
+            v88.billboard.Enabled = false
+          else
+            local magnitude2 = 0
+
+            if v86 then
+              magnitude2 = (v90.Position - v86.Position).Magnitude
+            end
+
+            v88.highlight.Adornee = character12
+            v88.highlight.FillTransparency = value38
+            v88.highlight.Enabled = true
+            v88.billboard.Adornee = head2
+            v88.billboard.Enabled = true
+            v88.nameLabel.TextSize = value39
+
+            local nameLabel = v88.nameLabel
+
+            nameLabel.Text = v87.Name
+              .. (value40 and " [" .. math.floor(magnitude2) .. "m]" or "")
+          end
+        end
+      end
+    end
+
+    return
+  end
+end))
+
+library:GiveSignal(localPlayer:GetAttributeChangedSignal("Fighting"):Connect(function()
+  if v22 then
+    return
+  end
+
+  v22 = true
+
+  if options.FightingToggle then
+    options.FightingToggle:SetValue(localPlayer:GetAttribute("Fighting") == true)
+  end
+
+  v22 = false
+end))
+
+library:GiveSignal(players.PlayerAdded:Connect(function(player)
+  task.defer(function()
+    if player ~= localPlayer and player.Character then
+      local humanoidRootPart8 = player.Character:FindFirstChild("HumanoidRootPart")
+
+      if humanoidRootPart8 then
+        v6[player] = humanoidRootPart8
+      end
+    end
+
+    if options.SitTarget and options.SitTarget.Value ~= "" then
+      local v91 = f5(options.SitTarget.Value)
+
+      if v91 then
+        v51 = v91
+      end
+    end
+  end)
+end))
+
+library:GiveSignal(players.PlayerRemoving:Connect(function(player2)
+  if v51 == player2 then
+    v51 = nil
+  end
+
+  if v58 == player2 then
+    v58 = nil
+  end
+
+  f15(player2)
+
+  if v6[player2] then
+    if v4[v6[player2]] then
+      f4(v6[player2])
+    end
+
+    v6[player2] = nil
+  end
+end))
+
+library:GiveSignal(localPlayer.CharacterAdded:Connect(function(character13)
+  task.wait(0.5)
+
+  if toggles.AntiRagdoll and toggles.AntiRagdoll.Value then
+    f22(character13)
+    f19()
+  end
+
+  f16()
+
+  if v11 then
+    task.wait(0.5)
+    f17()
+  end
+
+  if toggles.Spectate and toggles.Spectate.Value then
+    f6()
+  end
+
+  if v13 then
+    local humanoid7 = character13:FindFirstChildOfClass("Humanoid")
+
+    if humanoid7 then
+      humanoid7.WalkSpeed = v14
+    end
+  end
+end))
+
+local addLeftGroupbox8 = v49["UI Settings"]:AddLeftGroupbox("Menu", "wrench")
+
+addLeftGroupbox8:AddButton({
+  Text = "Minimize Window",
+  Func = function() f31() end,
+  DoubleClick = false,
+  Tooltip = "Hides the menu into a draggable circle",
+}):AddKeyPicker("MinimizeKey", {
+  Default = "F9",
+  Mode = "Press",
+  Text = "Minimize",
+})
+
+addLeftGroupbox8:AddToggle("KeybindMenuOpen", {
+  Default = library.KeybindFrame.Visible,
+  Text = "Open Keybind Menu",
+  Callback = function(value41) library.KeybindFrame.Visible = value41 end,
+})
+
+addLeftGroupbox8:AddToggle("ShowCustomCursor", {
+  Text = "Custom Cursor",
+  Default = true,
+  Callback = function(value42) library.ShowCustomCursor = value42 end,
+})
+
+addLeftGroupbox8:AddDivider()
+
+addLeftGroupbox8:AddLabel("Menu bind"):AddKeyPicker("MenuKeybind", {
+  Default = "RightShift",
+  NoUI = true,
+  Text = "Menu keybind",
+})
+
+addLeftGroupbox8:AddButton("Unload", function() library:Unload() end)
+
+library.ToggleKeybind = options.MenuKeybind
+
+library:OnUnload(function()
+  f12()
+
+  for key7, value43 in pairs(v6) do
+    if value43 and value43.Parent then
+      value43.Size = Vector3.new(2, 2, 1)
+      value43.Transparency = 1
+      value43.Material = Enum.Material.Plastic
+    end
+  end
+
+  for key8, value44 in pairs(v10) do
+    f15(key8)
+  end
+
+  screenGui:Destroy()
+  screenGui2:Destroy()
+  f18(false)
+  f6()
+  local v92 = f3()
+
+  if v92 then
+    v92.Sit = false
+
+    if v13 then
+      v92.WalkSpeed = 16
+    end
+  end
+
+  f21()
+  f23()
+  localPlayer:SetAttribute("Fighting", false)
+  v7 = false
+  v11 = false
+  v13 = false
+  v15 = false
+  v17 = false
+  v18 = false
+end)
+
+themeManager:SetLibrary(library)
+
+saveManager:SetLibrary(library)
+saveManager:IgnoreThemeSettings()
+saveManager:SetIgnoreIndexes({ "MenuKeybind" })
+
+themeManager:SetFolder("6ixxHub")
+
+saveManager:SetFolder("6ixxHub/configs")
+saveManager:BuildConfigSection(v49["UI Settings"])
+
+themeManager:ApplyToTab(v49["UI Settings"])
+saveManager:LoadAutoloadConfig()
+pcall(function() themeManager:ApplyTheme("Custom") end)
+
+library:Notify({
+  Title = "6ixx Hub",
+  Description = "Invisibility replaced with void method + customizable keybind (default V).",
+  Time = 4,
+})
