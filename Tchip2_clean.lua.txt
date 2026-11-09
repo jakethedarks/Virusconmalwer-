@@ -101,7 +101,7 @@ end
 
 local tchipMain = Instance.new("Frame")
 tchipMain.Name = "TchipMain"
-tchipMain.Size = UDim2.new(0, 300, 0, 540)
+tchipMain.Size = UDim2.new(0, 200, 0, 340)
 tchipMain.Position = UDim2.new(1, -320, 1, -560)
 tchipMain.BackgroundColor3 = Color3.fromRGB(16, 16, 20)
 tchipMain.BorderSizePixel = 0
