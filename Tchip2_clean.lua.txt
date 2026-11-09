@@ -109,6 +109,10 @@ tchipMain.Active = true
 tchipMain.Parent = tchip
 
 Instance.new("UICorner", tchipMain).CornerRadius = UDim.new(0, 12)
+-- ESCALAR EL MENÚ PARA CELULARES (0.6 es 60% de su tamaño original)
+local uiScale = Instance.new("UIScale")
+uiScale.Scale = 0.6 
+uiScale.Parent = tchipMain
 -- HACER LA VENTANA REDIMENSIONABLE
 local resizeGrip = Instance.new("TextButton")
 resizeGrip.Size = UDim2.new(0, 25, 0, 25)
