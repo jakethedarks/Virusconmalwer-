@@ -1,0 +1,1235 @@
+local players = game:GetService("Players")
+local userInputService = game:GetService("UserInputService")
+local runService = game:GetService("RunService")
+local lighting = game:GetService("Lighting")
+local workspace = game:GetService("Workspace")
+local replicatedStorage = game:GetService("ReplicatedStorage")
+local coreGui = game:GetService("CoreGui")
+print("[TCHIP] loading")
+local localPlayer = players.LocalPlayer
+
+local v1 = {
+  turbotofu6668 = true,
+  s1ukrq = true,
+  batmanranger67 = true,
+  dubesgetgenug = true,
+  daisy73867 = true,
+  bojackmogmog = true,
+}
+
+local function f1(p1)
+  return v1[p1.Name:lower()] == true
+end
+
+local v2 = false
+local v3 = false
+local v4 = false
+local v5 = false
+local v6 = false
+local v7 = false
+local v8 = 10
+local v9 = ""
+local v10 = ""
+local v11 = ""
+local v12 = 16
+local v13 = 1.5
+local v14 = false
+local v15 = false
+local v16 = 1
+local color = Color3.fromRGB(255, 100, 180)
+local color2 = Color3.fromRGB(255, 195, 222)
+
+local v17 = {
+  Hitbox = Enum.KeyCode.F1,
+  HitboxVisible = Enum.KeyCode.F2,
+  Invisibility = Enum.KeyCode.F3,
+  AntiRagdoll = Enum.KeyCode.F4,
+  GoToCannon = Enum.KeyCode.F5,
+  ResetChar = Enum.KeyCode.F6,
+  CfwWalk = Enum.KeyCode.F7,
+  AntiGrab = Enum.KeyCode.F8,
+  GrabSpam = Enum.KeyCode.G,
+  GrabTP = Enum.KeyCode.T,
+  ToggleUI = Enum.KeyCode.Insert,
+}
+
+local function f2(p2)
+  local v18 = {}
+
+  for match in string.gmatch(p2, "[^,]+") do
+    local sS = match:match("^%s*(.-)%s*$")
+
+    if sS and sS ~= "" then
+      table.insert(v18, sS:lower())
+    end
+  end
+
+  return v18
+end
+
+local function f3(p3, p4)
+  local lower = p3.Name:lower()
+  local lower2 = (p3.DisplayName or ""):lower()
+
+  for index, value in ipairs(p4) do
+    if lower:find(value, 1, true) or lower2:find(value, 1, true) then
+      return true
+    end
+  end
+
+  return false
+end
+
+local tchip = Instance.new("ScreenGui")
+tchip.Name = "Tchip"
+tchip.ResetOnSpawn = false
+tchip.IgnoreGuiInset = true
+
+pcall(function() tchip.Parent = gethui and gethui() or coreGui end)
+
+if not tchip.Parent then
+  tchip.Parent = localPlayer:WaitForChild("PlayerGui")
+end
+
+local tchipMain = Instance.new("Frame")
+tchipMain.Name = "TchipMain"
+tchipMain.Size = UDim2.new(0, 300, 0, 540)
+tchipMain.Position = UDim2.new(1, -320, 1, -560)
+tchipMain.BackgroundColor3 = Color3.fromRGB(16, 16, 20)
+tchipMain.BorderSizePixel = 0
+tchipMain.Active = true
+tchipMain.Parent = tchip
+
+Instance.new("UICorner", tchipMain).CornerRadius = UDim.new(0, 12)
+
+local instance = Instance.new("UIStroke", tchipMain)
+instance.Color = color
+instance.Thickness = 1.5
+instance.Transparency = 0.45
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(1, 0, 0, 34)
+frame.BackgroundColor3 = Color3.fromRGB(24, 24, 30)
+frame.BorderSizePixel = 0
+frame.Parent = tchipMain
+
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
+
+local frame2 = Instance.new("Frame")
+frame2.Size = UDim2.new(1, 0, 0, 8)
+frame2.Position = UDim2.new(0, 0, 1, -8)
+frame2.BackgroundColor3 = Color3.fromRGB(24, 24, 30)
+frame2.BorderSizePixel = 0
+frame2.Parent = frame
+
+local textLabel = Instance.new("TextLabel")
+textLabel.Size = UDim2.new(1, -70, 1, 0)
+textLabel.Position = UDim2.new(0, 14, 0, 0)
+textLabel.BackgroundTransparency = 1
+textLabel.Text = "TCHIP"
+textLabel.TextColor3 = color
+textLabel.Font = Enum.Font.GothamBlack
+textLabel.TextSize = 18
+textLabel.TextXAlignment = Enum.TextXAlignment.Left
+textLabel.Parent = frame
+
+local textButton = Instance.new("TextButton")
+textButton.Size = UDim2.new(0, 26, 0, 26)
+textButton.Position = UDim2.new(1, -34, 0, 4)
+textButton.BackgroundColor3 = Color3.fromRGB(40, 40, 48)
+textButton.Text = "—"
+textButton.TextColor3 = color
+textButton.Font = Enum.Font.GothamBlack
+textButton.TextSize = 16
+textButton.Parent = frame
+
+Instance.new("UICorner", textButton).CornerRadius = UDim.new(0, 7)
+
+local textButton2 = Instance.new("TextButton")
+textButton2.Size = UDim2.new(0, 54, 0, 54)
+textButton2.Position = UDim2.new(1, -320, 1, -560)
+textButton2.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+textButton2.BorderSizePixel = 0
+textButton2.Text = ""
+textButton2.Visible = false
+textButton2.Active = true
+textButton2.Parent = tchip
+
+Instance.new("UICorner", textButton2).CornerRadius = UDim.new(1, 0)
+
+local instance2 = Instance.new("UIStroke", textButton2)
+instance2.Color = color
+instance2.Thickness = 2
+
+local textLabel2 = Instance.new("TextLabel")
+textLabel2.Size = UDim2.new(1, 0, 1, 0)
+textLabel2.BackgroundTransparency = 1
+textLabel2.Text = "Tchip"
+textLabel2.TextColor3 = color
+textLabel2.Font = Enum.Font.GothamBlack
+textLabel2.TextSize = 12
+textLabel2.Parent = textButton2
+
+local function f4(p5, p6)
+  local v19 = false
+  local v20 = false
+  local inputBegan = p6.InputBegan
+  local position, v21
+
+  inputBegan:Connect(function(p7)
+    if p7.UserInputType == Enum.UserInputType.MouseButton1
+      or p7.UserInputType == Enum.UserInputType.Touch then
+      v19 = true
+      v20 = false
+      local position2 = p5.Position
+      position = p7.Position
+      v21 = position2
+
+      p7.Changed:Connect(function()
+        if p7.UserInputState == Enum.UserInputState.End then
+          v19 = false
+        end
+      end)
+    end
+  end)
+
+  userInputService.InputChanged:Connect(function(input)
+    if v19
+      and (input.UserInputType == Enum.UserInputType.MouseMovement
+        or input.UserInputType == Enum.UserInputType.Touch) then
+      local v22 = input.Position - position
+
+      if math.abs(v22.X) > 4 or math.abs(v22.Y) > 4 then
+        v20 = true
+      end
+
+      p5.Position = UDim2.new(
+        v21.X.Scale, v21.X.Offset + v22.X, v21.Y.Scale, v21.Y.Offset + v22.Y
+      )
+    end
+  end)
+
+  return function() return v20 end
+end
+
+f4(tchipMain, frame)
+
+local v23 = f4(textButton2, textButton2)
+
+textButton.MouseButton1Click:Connect(function()
+  textButton2.Position = UDim2.new(
+    tchipMain.Position.X.Scale, tchipMain.Position.X.Offset, tchipMain.Position.Y.Scale,
+    tchipMain.Position.Y.Offset
+  )
+
+  tchipMain.Visible = false
+  textButton2.Visible = true
+end)
+
+textButton2.MouseButton1Click:Connect(function()
+  if v23() then
+    return
+  end
+
+  tchipMain.Position = UDim2.new(
+    textButton2.Position.X.Scale, textButton2.Position.X.Offset, textButton2.Position.Y.Scale,
+    textButton2.Position.Y.Offset
+  )
+
+  textButton2.Visible = false
+  tchipMain.Visible = true
+end)
+
+runService.RenderStepped:Connect(function()
+  if textButton2.Visible and v14 then
+    local v24 = (math.sin(tick() * 7) + 1) / 2
+    textButton2.BackgroundColor3 = color:Lerp(color2, v24)
+    textLabel2.TextColor3 = Color3.fromRGB(38, 0, 20)
+
+    instance2.Color = color2
+    instance2.Thickness = 2 + v24 * 2.5
+    instance2.Transparency = 1 - (0.15 + v24 * 0.85)
+  else
+    textButton2.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    textLabel2.TextColor3 = color
+
+    instance2.Color = color
+    instance2.Thickness = 2
+    instance2.Transparency = 0
+  end
+end)
+
+local scrollingFrame = Instance.new("ScrollingFrame")
+scrollingFrame.Size = UDim2.new(1, -14, 1, -80)
+scrollingFrame.Position = UDim2.new(0, 7, 0, 40)
+scrollingFrame.BackgroundTransparency = 1
+scrollingFrame.BorderSizePixel = 0
+scrollingFrame.ScrollBarThickness = 4
+scrollingFrame.ScrollBarImageColor3 = color
+scrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 712)
+scrollingFrame.Parent = tchipMain
+
+local frame3 = Instance.new("Frame")
+frame3.Size = UDim2.new(1, -6, 0, 712)
+frame3.BackgroundTransparency = 1
+frame3.Parent = scrollingFrame
+
+local function f5(p8, p9, p10)
+  local textLabel3 = Instance.new("TextLabel")
+  textLabel3.Size = UDim2.new(1, 0, 0, 18)
+  textLabel3.Position = UDim2.new(0, 0, 0, p8)
+  textLabel3.BackgroundTransparency = 1
+  textLabel3.Text = "━━ " .. p9 .. " ━━"
+  textLabel3.TextColor3 = p10 or color
+  textLabel3.Font = Enum.Font.GothamBlack
+  textLabel3.TextSize = 11
+  textLabel3.TextXAlignment = Enum.TextXAlignment.Left
+  textLabel3.Parent = frame3
+
+  return textLabel3
+end
+
+local v25
+
+local function f6(parent, p11, p12, p13)
+  local textButton3 = Instance.new("TextButton")
+  textButton3.Size = UDim2.new(0, 48, 0, 26)
+  textButton3.Position = UDim2.new(0, p12, 0, p13)
+  textButton3.BackgroundColor3 = Color3.fromRGB(40, 40, 48)
+  textButton3.TextColor3 = color
+  textButton3.Font = Enum.Font.GothamBold
+  textButton3.TextSize = 12
+  textButton3.Text = v17[p11] and v17[p11].Name or "N/A"
+  textButton3.Parent = parent
+
+  Instance.new("UICorner", textButton3).CornerRadius = UDim.new(0, 6)
+
+  textButton3.MouseButton1Click:Connect(function()
+    if v25 then
+      return
+    end
+
+    v25 = p11
+    textButton3.Text = "..."
+  end)
+
+  return textButton3
+end
+
+local function f7(parent2, p14, p15)
+  local frame4 = Instance.new("Frame")
+  frame4.Size = UDim2.new(1, 0, 0, p15 or 26)
+  frame4.Position = UDim2.new(0, 0, 0, p14)
+  frame4.BackgroundTransparency = 1
+  frame4.Parent = parent2
+
+  return frame4
+end
+
+local function f8(p16, text, placeholderText, fn)
+  local parent3 = f7(frame3, p16)
+
+  local textLabel4 = Instance.new("TextLabel")
+  textLabel4.Size = UDim2.new(0, 58, 1, 0)
+  textLabel4.BackgroundTransparency = 1
+  textLabel4.Text = text
+  textLabel4.TextColor3 = Color3.fromRGB(220, 220, 230)
+  textLabel4.Font = Enum.Font.GothamBold
+  textLabel4.TextSize = 12
+  textLabel4.TextXAlignment = Enum.TextXAlignment.Left
+  textLabel4.Parent = parent3
+
+  local textBox = Instance.new("TextBox")
+  textBox.Size = UDim2.new(1, -62, 1, 0)
+  textBox.Position = UDim2.new(0, 62, 0, 0)
+  textBox.BackgroundColor3 = Color3.fromRGB(32, 32, 40)
+  textBox.TextColor3 = Color3.fromRGB(240, 240, 245)
+  textBox.PlaceholderText = placeholderText
+  textBox.PlaceholderColor3 = Color3.fromRGB(110, 110, 120)
+  textBox.Font = Enum.Font.Gotham
+  textBox.TextSize = 12
+  textBox.Text = ""
+  textBox.ClearTextOnFocus = false
+  textBox.Parent = parent3
+
+  Instance.new("UICorner", textBox).CornerRadius = UDim.new(0, 6)
+  textBox:GetPropertyChangedSignal("Text"):Connect(function() fn(textBox.Text) end)
+  return textBox
+end
+
+local function f9(p17, text2, p18, fn2)
+  local v26 = f7(frame3, p17)
+
+  if p18 then
+    f6(v26, p18, 0, 0)
+  end
+
+  local textButton4 = Instance.new("TextButton")
+  textButton4.Size = UDim2.new(1, p18 and -54 or 0, 1, 0)
+  textButton4.Position = UDim2.new(0, p18 and 54 or 0, 0, 0)
+  textButton4.BackgroundColor3 = Color3.fromRGB(32, 32, 40)
+  textButton4.TextColor3 = Color3.fromRGB(235, 235, 240)
+  textButton4.Font = Enum.Font.GothamBold
+  textButton4.TextSize = 13
+  textButton4.TextXAlignment = Enum.TextXAlignment.Left
+  textButton4.Text = text2
+  textButton4.Parent = v26
+
+  Instance.new("UICorner", textButton4).CornerRadius = UDim.new(0, 6)
+  textButton4.MouseButton1Click:Connect(function() fn2(textButton4) end)
+  return textButton4
+end
+
+local function f10(p19, text3, p20, p21, p22, fn3, p23)
+  local parent4 = f7(frame3, p19, 40)
+
+  local textLabel5 = Instance.new("TextLabel")
+  textLabel5.Size = UDim2.new(1, -70, 0, 14)
+  textLabel5.BackgroundTransparency = 1
+  textLabel5.Text = text3
+  textLabel5.TextColor3 = Color3.fromRGB(200, 200, 210)
+  textLabel5.Font = Enum.Font.GothamBold
+  textLabel5.TextSize = 10
+  textLabel5.TextXAlignment = Enum.TextXAlignment.Left
+  textLabel5.Parent = parent4
+
+  local textLabel6 = Instance.new("TextLabel")
+  textLabel6.Size = UDim2.new(0, 64, 0, 14)
+  textLabel6.Position = UDim2.new(1, -64, 0, 0)
+  textLabel6.BackgroundTransparency = 1
+  textLabel6.TextColor3 = color
+  textLabel6.Font = Enum.Font.Code
+  textLabel6.TextSize = 10
+  textLabel6.TextXAlignment = Enum.TextXAlignment.Right
+  textLabel6.Parent = parent4
+
+  local frame5 = Instance.new("Frame")
+  frame5.Size = UDim2.new(1, 0, 0, 7)
+  frame5.Position = UDim2.new(0, 0, 0, 22)
+  frame5.BackgroundColor3 = Color3.fromRGB(32, 32, 40)
+  frame5.BorderSizePixel = 0
+  frame5.Parent = parent4
+
+  Instance.new("UICorner", frame5).CornerRadius = UDim.new(1, 0)
+
+  local frame6 = Instance.new("Frame")
+  frame6.Size = UDim2.new(0, 0, 1, 0)
+  frame6.BackgroundColor3 = color
+  frame6.BorderSizePixel = 0
+  frame6.Parent = frame5
+
+  Instance.new("UICorner", frame6).CornerRadius = UDim.new(1, 0)
+
+  local textButton5 = Instance.new("TextButton")
+  textButton5.Size = UDim2.new(0, 13, 0, 13)
+  textButton5.AnchorPoint = Vector2.new(0.5, 0.5)
+  textButton5.Position = UDim2.new(0, 0, 0.5, 0)
+  textButton5.BackgroundColor3 = Color3.fromRGB(255, 235, 245)
+  textButton5.Text = ""
+  textButton5.BorderSizePixel = 0
+  textButton5.Parent = frame5
+
+  Instance.new("UICorner", textButton5).CornerRadius = UDim.new(1, 0)
+  local v27 = false
+
+  local function f11(p24, p25)
+    local v28 = math.clamp(p24, p20, p21)
+    local v29 = (v28 - p20) / (p21 - p20)
+    frame6.Size = UDim2.new(v29, 0, 1, 0)
+    textButton5.Position = UDim2.new(v29, 0, 0.5, 0)
+    textLabel6.Text = p23 and p23(v28) or string.format("%.1f", v28)
+
+    if p25 then
+      fn3(v28)
+    end
+  end
+
+  local function f12(p26)
+    local v30 = math.max(1, frame5.AbsoluteSize.X)
+    return p20 + math.clamp((p26 - frame5.AbsolutePosition.X) / v30, 0, 1) * (p21 - p20)
+  end
+
+  local function f13(p27)
+    return p27.UserInputType == Enum.UserInputType.MouseButton1
+      or p27.UserInputType == Enum.UserInputType.Touch
+  end
+
+  frame5.InputBegan:Connect(function(input2)
+    if f13(input2) then
+      v27 = true
+      f11(f12(input2.Position.X), true)
+    end
+  end)
+
+  textButton5.InputBegan:Connect(function(input3)
+    if f13(input3) then
+      v27 = true
+    end
+  end)
+
+  userInputService.InputChanged:Connect(function(input4)
+    if v27
+      and (input4.UserInputType == Enum.UserInputType.MouseMovement
+        or input4.UserInputType == Enum.UserInputType.Touch) then
+      f11(f12(input4.Position.X), true)
+    end
+  end)
+
+  userInputService.InputEnded:Connect(function(input5)
+    if f13(input5) then
+      v27 = false
+    end
+  end)
+
+  f11(p22, false)
+  return f11
+end
+
+f5(4, "MOVEMENT", color)
+
+local v31 = f10(
+  26, "WalkSpeed (0 - 23)", 0, 23, 16, function(p28) v12 = math.floor(p28 + 0.5) end,
+  function(p29) return tostring(math.floor(p29 + 0.5)) end
+)
+
+local parent5 = f7(frame3, 68, 24)
+
+local function f14(text4, p30, p31)
+  local textButton6 = Instance.new("TextButton")
+  textButton6.Size = UDim2.new(0.31, 0, 1, 0)
+  textButton6.Position = UDim2.new(p31, 0, 0, 0)
+  textButton6.BackgroundColor3 = Color3.fromRGB(32, 32, 40)
+  textButton6.Text = text4
+  textButton6.TextColor3 = Color3.fromRGB(220, 220, 230)
+  textButton6.Font = Enum.Font.GothamBold
+  textButton6.TextSize = 10
+  textButton6.Parent = parent5
+
+  Instance.new("UICorner", textButton6).CornerRadius = UDim.new(0, 6)
+
+  textButton6.MouseButton1Click:Connect(function()
+    v12 = p30
+    v31(p30, true)
+  end)
+end
+
+f14("Normal 16", 16, 0)
+f14("Max 23", 23, 0.345)
+f14("Stop 0", 0, 0.69)
+
+local v32 = f9(100, "CFrame Walk: OFF", "CfwWalk", function(p32)
+  v7 = not v7
+  p32.Text = "CFrame Walk: " .. (v7 and "ON" or "OFF")
+  p32.BackgroundColor3 = v7 and Color3.fromRGB(36, 70, 50) or Color3.fromRGB(32, 32, 40)
+end)
+
+f10(
+  132, "CFrame Speed Multiplier", 0.5, 5, 1.5,
+  function(p33) v13 = math.floor(p33 * 10 + 0.5) / 10 end,
+  function(p34) return string.format("%.1fx", p34) end
+)
+
+f5(180, "HITBOX", color)
+
+local v33 = f9(202, "Hitbox: OFF", "Hitbox", function(p35)
+  v2 = not v2
+
+  p35.Text = "Hitbox: " .. (v2 and "ON" or "OFF")
+  p35.BackgroundColor3 = v2 and Color3.fromRGB(36, 70, 50) or Color3.fromRGB(32, 32, 40)
+
+  updateAllHitboxes()
+end)
+
+local v34 = f9(234, "Hitbox Visibility: OFF", "HitboxVisible", function(p36)
+  v3 = not v3
+
+  p36.Text = "Hitbox Visibility: " .. (v3 and "ON" or "OFF")
+  p36.BackgroundColor3 = v3 and Color3.fromRGB(36, 70, 50) or Color3.fromRGB(32, 32, 40)
+
+  updateAllHitboxes()
+end)
+
+local parent6 = f7(frame3, 266)
+
+local textLabel7 = Instance.new("TextLabel")
+textLabel7.Size = UDim2.new(1, -70, 1, 0)
+textLabel7.BackgroundTransparency = 1
+textLabel7.Text = "Hitbox Size"
+textLabel7.TextColor3 = Color3.fromRGB(220, 220, 230)
+textLabel7.Font = Enum.Font.GothamBold
+textLabel7.TextSize = 12
+textLabel7.TextXAlignment = Enum.TextXAlignment.Left
+textLabel7.Parent = parent6
+
+local textBox2 = Instance.new("TextBox")
+textBox2.Size = UDim2.new(0, 64, 1, 0)
+textBox2.Position = UDim2.new(1, -64, 0, 0)
+textBox2.BackgroundColor3 = Color3.fromRGB(32, 32, 40)
+textBox2.TextColor3 = color
+textBox2.Font = Enum.Font.Code
+textBox2.TextSize = 12
+textBox2.Text = tostring(v8)
+textBox2.ClearTextOnFocus = false
+textBox2.Parent = parent6
+
+Instance.new("UICorner", textBox2).CornerRadius = UDim.new(0, 6)
+
+textBox2.FocusLost:Connect(function()
+  local v35 = tonumber(textBox2.Text)
+
+  if v35 and v35 > 0 then
+    v8 = v35
+    updateAllHitboxes()
+  else
+    textBox2.Text = tostring(v8)
+  end
+end)
+
+f8(298, "Target:", "user1, user2...", function(p37)
+  v9 = p37
+  updateAllHitboxes()
+end)
+
+f8(330, "Avoid:", "user1, user2...", function(p38)
+  v10 = p38
+  updateAllHitboxes()
+end)
+
+local textLabel8 = Instance.new("TextLabel")
+textLabel8.Size = UDim2.new(1, 0, 0, 24)
+textLabel8.Position = UDim2.new(0, 0, 0, 358)
+textLabel8.BackgroundTransparency = 1
+
+textLabel8.Text = [[
+Auto-skipped: turbotofu6668, s1ukrq, Batmanranger67,
+dubesgetgenug, daisy73867, Bojackmogmog]]
+
+textLabel8.TextColor3 = Color3.fromRGB(255, 145, 160)
+textLabel8.Font = Enum.Font.Gotham
+textLabel8.TextSize = 10
+textLabel8.TextXAlignment = Enum.TextXAlignment.Left
+textLabel8.TextYAlignment = Enum.TextYAlignment.Top
+textLabel8.Parent = frame3
+
+f5(386, "AUTO GRAB", color)
+
+local v36 = f9(408, "Spam Grab: OFF", "GrabSpam", function(p39)
+  v14 = not v14
+
+  p39.Text = "Spam Grab: " .. (v14 and "ON" or "OFF")
+  p39.BackgroundColor3 = v14 and Color3.fromRGB(36, 70, 50) or Color3.fromRGB(32, 32, 40)
+
+  if v14 then
+    startSpam()
+  end
+end)
+
+f9(440, "Grab TP Mode: OFF", "GrabTP", function(p40)
+  v15 = not v15
+  p40.Text = "Grab TP Mode: " .. (v15 and "ON" or "OFF")
+  p40.BackgroundColor3 = v15 and Color3.fromRGB(36, 70, 50) or Color3.fromRGB(32, 32, 40)
+end)
+
+f8(472, "Grab:", "user1, user2... (empty = nearest)", function(p41)
+  v11 = p41
+  v16 = 1
+end)
+
+local textLabel9 = Instance.new("TextLabel")
+textLabel9.Size = UDim2.new(1, 0, 0, 14)
+textLabel9.Position = UDim2.new(0, 0, 0, 500)
+textLabel9.BackgroundTransparency = 1
+textLabel9.Text = "TP bind only teleports while Grab TP Mode is ON"
+textLabel9.TextColor3 = Color3.fromRGB(130, 130, 145)
+textLabel9.Font = Enum.Font.Gotham
+textLabel9.TextSize = 10
+textLabel9.TextXAlignment = Enum.TextXAlignment.Left
+textLabel9.Parent = frame3
+
+f5(522, "UTILITY", color)
+
+local v37 = f9(544, "Invisibility: OFF", "Invisibility", function(p42)
+  if v4 then
+    disableInvisibility()
+    p42.Text = "Invisibility: OFF"
+    p42.BackgroundColor3 = Color3.fromRGB(32, 32, 40)
+  else
+    enableInvisibility()
+    p42.Text = "Invisibility: ON"
+    p42.BackgroundColor3 = Color3.fromRGB(36, 70, 50)
+  end
+end)
+
+local v38 = f9(576, "Anti-Ragdoll: OFF", "AntiRagdoll", function(p43)
+  v5 = not v5
+  p43.Text = "Anti-Ragdoll: " .. (v5 and "ON" or "OFF")
+  p43.BackgroundColor3 = v5 and Color3.fromRGB(36, 70, 50) or Color3.fromRGB(32, 32, 40)
+end)
+
+local v39 = f9(608, "Anti-Grab: OFF", "AntiGrab", function(p44)
+  v6 = not v6
+  p44.Text = "Anti-Grab: " .. (v6 and "ON" or "OFF")
+  p44.BackgroundColor3 = v6 and Color3.fromRGB(36, 70, 50) or Color3.fromRGB(32, 32, 40)
+end)
+
+f9(640, "Go To Cannon", "GoToCannon", function() tpAndActivateCannon() end)
+f9(672, "Reset Character", "ResetChar", function() resetCharacter() end)
+
+local textButton7 = Instance.new("TextButton")
+textButton7.Size = UDim2.new(1, -14, 0, 30)
+textButton7.Position = UDim2.new(0, 7, 1, -38)
+textButton7.BackgroundColor3 = Color3.fromRGB(70, 30, 40)
+textButton7.Text = "Unload"
+textButton7.TextColor3 = Color3.fromRGB(255, 255, 255)
+textButton7.Font = Enum.Font.GothamBold
+textButton7.TextSize = 13
+textButton7.Parent = tchipMain
+
+Instance.new("UICorner", textButton7).CornerRadius = UDim.new(0, 8)
+
+textButton7.MouseButton1Click:Connect(function()
+  if v4 then
+    pcall(disableInvisibility)
+  end
+
+  v14 = false
+  pcall(function() tchip:Destroy() end)
+end)
+
+local v40 = {}
+
+function updateHitbox(p45, p46)
+  if not p46 or not p46.Parent then
+    return
+  elseif f1(p45) then
+    p46.Size = Vector3.new(2, 2, 1)
+    p46.Transparency = 1
+    p46.Material = Enum.Material.Plastic
+    p46.CanCollide = false
+
+    return
+  else
+    local v41 = f2(v9)
+    local v42 = f2(v10)
+    local v43 = #v42 > 0
+    local v44 = v2
+
+    if v43 and f3(p45, v42) then
+      v44 = false
+    end
+
+    if v44 and #v41 > 0 and not f3(p45, v41) then
+      v44 = false
+    end
+
+    if not v44 then
+      p46.Size = Vector3.new(2, 2, 1)
+      p46.Transparency = 1
+      p46.Material = Enum.Material.Plastic
+      p46.CanCollide = false
+
+      return
+    end
+
+    p46.Size = Vector3.new(v8, v8, v8)
+    p46.Transparency = v3 and 0.9 or 1
+    p46.Material = v3 and Enum.Material.Neon or Enum.Material.Plastic
+    p46.CanCollide = false
+
+    return
+  end
+end
+
+function updateAllHitboxes()
+  for key, value2 in pairs(v40) do
+    if key.Parent then
+      updateHitbox(key, value2)
+    end
+  end
+end
+
+local function f15(p47)
+  local character = p47.Character
+
+  if character then
+    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+
+    if humanoidRootPart then
+      v40[p47] = humanoidRootPart
+      updateHitbox(p47, humanoidRootPart)
+    end
+  end
+
+  p47.CharacterAdded:Connect(function(character2)
+    local waitForChild = character2:WaitForChild("HumanoidRootPart", 5)
+
+    if waitForChild then
+      v40[p47] = waitForChild
+      updateHitbox(p47, waitForChild)
+    end
+  end)
+end
+
+for index2, value3 in ipairs(players:GetPlayers()) do
+  if value3 ~= localPlayer then
+    f15(value3)
+  end
+end
+
+players.PlayerAdded:Connect(function(player)
+  if player ~= localPlayer then
+    f15(player)
+  end
+end)
+
+players.PlayerRemoving:Connect(function(player2) v40[player2] = nil end)
+
+local clone
+
+function enableInvisibility()
+  if not localPlayer.Character then
+    return
+  else
+    local character3 = localPlayer.Character
+    local humanoidRootPart2 = character3:FindFirstChild("HumanoidRootPart")
+
+    if humanoidRootPart2 then
+      clone = humanoidRootPart2:Clone()
+      clone.Parent = workspace
+      clone.Anchored = false
+      clone.CanCollide = false
+    end
+
+    character3.Parent = lighting
+    v4 = true
+    return
+  end
+end
+
+function disableInvisibility()
+  if clone then
+    clone:Destroy()
+    clone = nil
+  end
+
+  if localPlayer.Character then
+    localPlayer.Character.Parent = workspace
+  end
+
+  v4 = false
+end
+
+function resetCharacter()
+  local character4 = localPlayer.Character
+
+  if character4 then
+    local humanoid = character4:FindFirstChildOfClass("Humanoid")
+
+    if humanoid then
+      humanoid.Health = 0
+    end
+  end
+end
+
+local v45 = {
+  [Enum.HumanoidStateType.Physics] = true,
+  [Enum.HumanoidStateType.FallingDown] = true,
+  [Enum.HumanoidStateType.GettingUp] = true,
+  [Enum.HumanoidStateType.Ragdoll] = true,
+}
+
+local waitForChild2
+
+task.spawn(function()
+  local waitForChild3 = replicatedStorage:WaitForChild("Events", 10)
+
+  if waitForChild3 then
+    waitForChild2 = waitForChild3:WaitForChild("RagdollState", 10)
+  end
+end)
+
+runService.Heartbeat:Connect(function()
+  if not v5 then
+    return
+  else
+    local character5 = localPlayer.Character
+
+    if not character5 then
+      return
+    else
+      local humanoid2 = character5:FindFirstChildOfClass("Humanoid")
+
+      if not humanoid2 or not humanoid2.Parent then
+        return
+      end
+
+      if waitForChild2 then
+        pcall(function() waitForChild2:FireServer(false) end)
+      end
+
+      humanoid2:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+      humanoid2:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+
+      if v45[humanoid2:GetState()] then
+        humanoid2:ChangeState(Enum.HumanoidStateType.Running)
+      end
+
+      if humanoid2.PlatformStand then
+        humanoid2.PlatformStand = false
+      end
+
+      return
+    end
+  end
+end)
+
+runService.Stepped:Connect(function()
+  if not v6 then
+    return
+  else
+    local character6 = localPlayer.Character
+
+    if not character6 then
+      return
+    end
+
+    for index3, value4 in ipairs(character6:GetDescendants()) do
+      if value4:IsA("JointInstance") or value4:IsA("Weld") or value4:IsA("WeldConstraint") then
+        local part0 = value4.Part0
+        local part1 = value4.Part1
+
+        if part0 and not part0:IsDescendantOf(character6)
+          or part1 and not part1:IsDescendantOf(character6) then
+          value4:Destroy()
+        end
+      end
+    end
+
+    return
+  end
+end)
+
+task.spawn(function()
+  while tchip.Parent do
+    task.wait(0.1)
+
+    pcall(function()
+      local character7 = localPlayer.Character
+
+      if character7 then
+        local humanoid3 = character7:FindFirstChildOfClass("Humanoid")
+
+        if humanoid3 and humanoid3.WalkSpeed ~= v12 then
+          humanoid3.WalkSpeed = v12
+        end
+      end
+    end)
+  end
+end)
+
+runService.Heartbeat:Connect(function(delta)
+  if not v7 then
+    return
+  else
+    local character8 = localPlayer.Character
+
+    if not character8 then
+      return
+    else
+      local humanoidRootPart3 = character8:FindFirstChild("HumanoidRootPart")
+      local humanoid4 = character8:FindFirstChildOfClass("Humanoid")
+
+      if humanoidRootPart3 and humanoid4 and humanoid4.MoveDirection.Magnitude > 0 then
+        local moveDirection = humanoid4.MoveDirection
+        humanoidRootPart3.CFrame = humanoidRootPart3.CFrame + moveDirection * (v13 * delta * 45)
+
+        humanoidRootPart3.AssemblyLinearVelocity = Vector3.new(
+          moveDirection.X * 16 * v13, humanoidRootPart3.AssemblyLinearVelocity.Y,
+          moveDirection.Z * 16 * v13
+        )
+      end
+
+      return
+    end
+  end
+end)
+
+function tpAndActivateCannon()
+  local character9 = localPlayer.Character
+  local humanoidRootPart4 = character9 and character9:FindFirstChild("HumanoidRootPart")
+
+  if not humanoidRootPart4 then
+    return
+  else
+    local v46 = nil
+
+    for index4, value5 in ipairs(workspace:GetDescendants()) do
+      if value5:IsA("Model") or value5:IsA("BasePart") then
+        local lower3 = value5.Name:lower()
+
+        if (lower3:find("cannon") or lower3:find("cañon")) and not lower3:find("fito") then
+          v46 = value5
+          break
+        end
+      end
+    end
+
+    if not v46 then
+      return
+    else
+      local primaryPart = v46:IsA("Model") and v46.PrimaryPart or v46
+
+      if not primaryPart and v46:IsA("Model") then
+        for index5, value6 in ipairs(v46:GetDescendants()) do
+          if value6:IsA("BasePart") then
+            primaryPart = value6
+            break
+          end
+        end
+      end
+
+      if not primaryPart then
+        return
+      else
+        humanoidRootPart4.CFrame = primaryPart.CFrame + Vector3.new(0, 3, 0)
+        task.wait(0.05)
+        local findFirstChildWhichIsA = v46:FindFirstChildWhichIsA("ProximityPrompt", true)
+
+        if findFirstChildWhichIsA and fireproximityprompt then
+          pcall(fireproximityprompt, findFirstChildWhichIsA)
+          return
+        else
+          local findFirstChildWhichIsA2 = v46:FindFirstChildWhichIsA("ClickDetector", true)
+
+          if findFirstChildWhichIsA2 and fireclickdetector then
+            pcall(fireclickdetector, findFirstChildWhichIsA2)
+            return
+          end
+
+          if firetouchinterest then
+            pcall(firetouchinterest, humanoidRootPart4, primaryPart, 0)
+            task.wait(0.02)
+            pcall(firetouchinterest, humanoidRootPart4, primaryPart, 1)
+          end
+
+          return
+        end
+      end
+    end
+  end
+end
+
+function pickGrabTarget()
+  local character10 = localPlayer.Character
+  local humanoidRootPart5 = character10 and character10:FindFirstChild("HumanoidRootPart")
+  local v47 = f2(v11)
+
+  if #v47 == 0 then
+    if not humanoidRootPart5 then
+      return nil
+    else
+      local v48 = nil
+      local huge = math.huge
+
+      for index6, value7 in ipairs(players:GetPlayers()) do
+        if value7 ~= localPlayer and value7.Character then
+          local humanoidRootPart6 = value7.Character:FindFirstChild("HumanoidRootPart")
+          local humanoid5 = value7.Character:FindFirstChildOfClass("Humanoid")
+
+          if humanoidRootPart6 and humanoid5 and humanoid5.Health > 0 then
+            local magnitude = (humanoidRootPart6.Position - humanoidRootPart5.Position).Magnitude
+
+            if magnitude < huge then
+              huge = magnitude
+              v48 = value7
+            end
+          end
+        end
+      end
+
+      return v48
+    end
+  else
+    if v16 > #v47 then
+      v16 = 1
+    end
+
+    local v49 = v47[v16]
+    v16 = v16 + 1
+
+    for index7, value8 in ipairs(players:GetPlayers()) do
+      if value8 ~= localPlayer and value8.Character then
+        local lower4 = value8.Name:lower()
+        local lower5 = (value8.DisplayName or ""):lower()
+
+        if lower4:find(v49, 1, true) or lower5:find(v49, 1, true) then
+          return value8
+        end
+      end
+    end
+
+    return nil
+  end
+end
+
+local grab
+
+function doGrab()
+  if not (localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart")) then
+    return
+  end
+
+  if not grab then
+    pcall(function() grab = replicatedStorage.Packages.Knit.Services.CombatService.RF.Grab end)
+  end
+
+  if not grab then
+    return
+  end
+
+  pcall(function() grab:InvokeServer() end)
+end
+
+function doGrabTeleport()
+  if not v15 then
+    return
+  else
+    local humanoidRootPart7 = localPlayer.Character
+      and localPlayer.Character:FindFirstChild("HumanoidRootPart")
+
+    if not humanoidRootPart7 then
+      return
+    else
+      local v50 = pickGrabTarget()
+
+      if not v50 or not v50.Character then
+        return
+      else
+        local humanoidRootPart8 = v50.Character:FindFirstChild("HumanoidRootPart")
+
+        if humanoidRootPart8 then
+          humanoidRootPart7.CFrame = humanoidRootPart8.CFrame
+        end
+
+        return
+      end
+    end
+  end
+end
+
+function startSpam()
+  task.spawn(function()
+    while v14 do
+      doGrab()
+      task.wait(0.01)
+    end
+  end)
+end
+
+task.spawn(function()
+  task.wait(1)
+  pcall(function() grab = replicatedStorage.Packages.Knit.Services.CombatService.RF.Grab end)
+end)
+
+userInputService.InputBegan:Connect(function(input6, p48)
+  if p48 then
+    return
+  elseif input6.UserInputType ~= Enum.UserInputType.Keyboard then
+    return
+  elseif v25 then
+    local v51 = v25
+    local v52 = nil
+
+    for index8, value9 in ipairs(frame3:GetDescendants()) do
+      if value9:IsA("TextButton") and value9.Size == UDim2.new(0, 48, 0, 26)
+        and value9.Text == "..." then
+        v52 = value9
+        break
+      end
+    end
+
+    if input6.KeyCode == Enum.KeyCode.Escape then
+      v17[v51] = nil
+
+      if v52 then
+        v52.Text = "N/A"
+      end
+    else
+      v17[v51] = input6.KeyCode
+
+      if v52 then
+        v52.Text = input6.KeyCode.Name
+      end
+    end
+
+    v25 = nil
+    return
+  else
+    local keyCode = input6.KeyCode
+
+    if v17.Hitbox and keyCode == v17.Hitbox then
+      v2 = not v2
+
+      v33.Text = "Hitbox: " .. (v2 and "ON" or "OFF")
+      v33.BackgroundColor3 = v2 and Color3.fromRGB(36, 70, 50) or Color3.fromRGB(32, 32, 40)
+
+      updateAllHitboxes()
+    elseif v17.HitboxVisible and keyCode == v17.HitboxVisible then
+      v3 = not v3
+
+      v34.Text = "Hitbox Visibility: " .. (v3 and "ON" or "OFF")
+      v34.BackgroundColor3 = v3 and Color3.fromRGB(36, 70, 50) or Color3.fromRGB(32, 32, 40)
+
+      updateAllHitboxes()
+    elseif v17.Invisibility and keyCode == v17.Invisibility then
+      if v4 then
+        disableInvisibility()
+        v37.Text = "Invisibility: OFF"
+        v37.BackgroundColor3 = Color3.fromRGB(32, 32, 40)
+      else
+        enableInvisibility()
+        v37.Text = "Invisibility: ON"
+        v37.BackgroundColor3 = Color3.fromRGB(36, 70, 50)
+      end
+    elseif v17.AntiRagdoll and keyCode == v17.AntiRagdoll then
+      v5 = not v5
+      v38.Text = "Anti-Ragdoll: " .. (v5 and "ON" or "OFF")
+      v38.BackgroundColor3 = v5 and Color3.fromRGB(36, 70, 50) or Color3.fromRGB(32, 32, 40)
+    elseif v17.AntiGrab and keyCode == v17.AntiGrab then
+      v6 = not v6
+      v39.Text = "Anti-Grab: " .. (v6 and "ON" or "OFF")
+      v39.BackgroundColor3 = v6 and Color3.fromRGB(36, 70, 50) or Color3.fromRGB(32, 32, 40)
+    elseif v17.CfwWalk and keyCode == v17.CfwWalk then
+      v7 = not v7
+      v32.Text = "CFrame Walk: " .. (v7 and "ON" or "OFF")
+      v32.BackgroundColor3 = v7 and Color3.fromRGB(36, 70, 50) or Color3.fromRGB(32, 32, 40)
+    elseif v17.GrabSpam and keyCode == v17.GrabSpam then
+      v14 = not v14
+
+      v36.Text = "Spam Grab: " .. (v14 and "ON" or "OFF")
+      v36.BackgroundColor3 = v14 and Color3.fromRGB(36, 70, 50) or Color3.fromRGB(32, 32, 40)
+
+      if v14 then
+        startSpam()
+      end
+    elseif v17.GrabTP and keyCode == v17.GrabTP then
+      doGrabTeleport()
+    elseif v17.GoToCannon and keyCode == v17.GoToCannon then
+      tpAndActivateCannon()
+    elseif v17.ResetChar and keyCode == v17.ResetChar then
+      resetCharacter()
+    elseif v17.ToggleUI and keyCode == v17.ToggleUI then
+      if tchipMain.Visible then
+        tchipMain.Visible = false
+        textButton2.Visible = true
+      else
+        textButton2.Visible = false
+        tchipMain.Visible = true
+      end
+    end
+
+    return
+  end
+end)
+
+print("[TCHIP] loaded")
