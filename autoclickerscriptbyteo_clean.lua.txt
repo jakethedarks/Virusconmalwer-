@@ -1,0 +1,292 @@
+local players = game:GetService("Players")
+local userInputService = game:GetService("UserInputService")
+local runService = game:GetService("RunService")
+local playerGui = players.LocalPlayer:WaitForChild("PlayerGui")
+
+local teoClickerUI = Instance.new("ScreenGui")
+teoClickerUI.Name = "TeoClickerUI"
+teoClickerUI.ResetOnSpawn = false
+teoClickerUI.Parent = playerGui
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 280, 0, 180)
+frame.Position = UDim2.new(0.5, -140, 0.5, -90)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Parent = teoClickerUI
+
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(0, 12)
+uiCorner.Parent = frame
+
+local titleBar = Instance.new("Frame")
+titleBar.Name = "TitleBar"
+titleBar.Size = UDim2.new(1, 0, 0, 40)
+titleBar.BackgroundColor3 = Color3.fromRGB(128, 0, 128)
+titleBar.BorderSizePixel = 0
+titleBar.Parent = frame
+
+local uiCorner2 = Instance.new("UICorner")
+uiCorner2.CornerRadius = UDim.new(0, 12)
+uiCorner2.Parent = titleBar
+
+local frame2 = Instance.new("Frame")
+frame2.Size = UDim2.new(1, 0, 0.5, 0)
+frame2.Position = UDim2.new(0, 0, 0.5, 0)
+frame2.BackgroundColor3 = Color3.fromRGB(128, 0, 128)
+frame2.BorderSizePixel = 0
+frame2.Parent = titleBar
+
+local textLabel = Instance.new("TextLabel")
+textLabel.Size = UDim2.new(1, 0, 1, 0)
+textLabel.BackgroundTransparency = 1
+textLabel.Text = "⚡ TEO AUTO CLICKER ⚡"
+textLabel.TextColor3 = Color3.new(1, 1, 1)
+textLabel.Font = Enum.Font.GothamBold
+textLabel.TextSize = 18
+textLabel.Parent = titleBar
+
+local frame3 = Instance.new("Frame")
+frame3.Size = UDim2.new(0, 240, 0, 35)
+frame3.Position = UDim2.new(0.5, -120, 0, 50)
+frame3.BackgroundColor3 = Color3.fromRGB(50, 50, 55)
+frame3.BorderSizePixel = 0
+frame3.Parent = frame
+
+local uiCorner3 = Instance.new("UICorner")
+uiCorner3.CornerRadius = UDim.new(0, 8)
+uiCorner3.Parent = frame3
+
+local textLabel2 = Instance.new("TextLabel")
+textLabel2.Size = UDim2.new(1, 0, 1, 0)
+textLabel2.BackgroundTransparency = 1
+textLabel2.Text = "STATUS: OFF"
+textLabel2.TextColor3 = Color3.fromRGB(255, 80, 80)
+textLabel2.Font = Enum.Font.GothamBold
+textLabel2.TextSize = 16
+textLabel2.Parent = frame3
+
+local textLabel3 = Instance.new("TextLabel")
+textLabel3.Size = UDim2.new(0, 240, 0, 20)
+textLabel3.Position = UDim2.new(0.5, -120, 0, 90)
+textLabel3.BackgroundTransparency = 1
+textLabel3.Text = "CPS: 100"
+textLabel3.TextColor3 = Color3.new(1, 1, 1)
+textLabel3.Font = Enum.Font.Gotham
+textLabel3.TextSize = 14
+textLabel3.Parent = frame
+
+local frame4 = Instance.new("Frame")
+frame4.Size = UDim2.new(0, 240, 0, 8)
+frame4.Position = UDim2.new(0.5, -120, 0, 115)
+frame4.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+frame4.BorderSizePixel = 0
+frame4.Parent = frame
+
+local uiCorner4 = Instance.new("UICorner")
+uiCorner4.CornerRadius = UDim.new(1, 0)
+uiCorner4.Parent = frame4
+
+local frame5 = Instance.new("Frame")
+frame5.Size = UDim2.new(1, 0, 1, 0)
+frame5.BackgroundColor3 = Color3.fromRGB(128, 0, 128)
+frame5.BorderSizePixel = 0
+frame5.Parent = frame4
+
+local uiCorner5 = Instance.new("UICorner")
+uiCorner5.CornerRadius = UDim.new(1, 0)
+uiCorner5.Parent = frame5
+
+local textButton = Instance.new("TextButton")
+textButton.Size = UDim2.new(0, 18, 0, 18)
+textButton.Position = UDim2.new(1, -9, 0.5, -9)
+textButton.BackgroundColor3 = Color3.new(1, 1, 1)
+textButton.Text = ""
+textButton.Parent = frame4
+
+local uiCorner6 = Instance.new("UICorner")
+uiCorner6.CornerRadius = UDim.new(1, 0)
+uiCorner6.Parent = textButton
+
+local frame6 = Instance.new("Frame")
+frame6.Size = UDim2.new(0, 240, 0, 40)
+frame6.Position = UDim2.new(0.5, -120, 0, 130)
+frame6.BackgroundTransparency = 1
+frame6.Parent = frame
+
+local textButton2 = Instance.new("TextButton")
+textButton2.Size = UDim2.new(0, 115, 1, 0)
+textButton2.Position = UDim2.new(0, 0, 0, 0)
+textButton2.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+textButton2.Text = "ON"
+textButton2.TextColor3 = Color3.new(1, 1, 1)
+textButton2.Font = Enum.Font.GothamBold
+textButton2.TextSize = 16
+textButton2.Parent = frame6
+
+local uiCorner7 = Instance.new("UICorner")
+uiCorner7.CornerRadius = UDim.new(0, 8)
+uiCorner7.Parent = textButton2
+
+local textButton3 = Instance.new("TextButton")
+textButton3.Size = UDim2.new(0, 115, 1, 0)
+textButton3.Position = UDim2.new(1, -115, 0, 0)
+textButton3.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+textButton3.Text = "OFF"
+textButton3.TextColor3 = Color3.new(1, 1, 1)
+textButton3.Font = Enum.Font.GothamBold
+textButton3.TextSize = 16
+textButton3.Parent = frame6
+
+local uiCorner8 = Instance.new("UICorner")
+uiCorner8.CornerRadius = UDim.new(0, 8)
+uiCorner8.Parent = textButton3
+
+local v1 = false
+local v2 = 100
+local v3 = 0
+local v4 = false
+local v5 = false
+local position, position2
+
+local function f1(p1)
+  local v6 = p1.Position - position
+
+  frame.Position = UDim2.new(
+    position2.X.Scale, position2.X.Offset + v6.X, position2.Y.Scale, position2.Y.Offset + v6.Y
+  )
+end
+
+titleBar.InputBegan:Connect(function(input)
+  if input.UserInputType == Enum.UserInputType.MouseButton1
+    or input.UserInputType == Enum.UserInputType.Touch then
+    v5 = true
+    position = input.Position
+    position2 = frame.Position
+
+    input.Changed:Connect(function()
+      if input.UserInputState == Enum.UserInputState.End then
+        v5 = false
+      end
+    end)
+  end
+end)
+
+local v7
+
+titleBar.InputChanged:Connect(function(input2)
+  if input2.UserInputType == Enum.UserInputType.MouseMovement
+    or input2.UserInputType == Enum.UserInputType.Touch then
+    v7 = input2
+  end
+end)
+
+userInputService.InputChanged:Connect(function(input3)
+  if input3 == v7 and v5 then
+    f1(input3)
+  end
+end)
+
+local function f2(p2)
+  v2 = math.clamp(math.round(p2), 0, 100)
+  textLabel3.Text = "CPS: " .. v2
+  local v8 = v2 / 100
+  frame5.Size = UDim2.new(v8, 0, 1, 0)
+  textButton.Position = UDim2.new(v8, -9, 0.5, -9)
+end
+
+local function f3()
+  if v1 then
+    return
+  end
+
+  v1 = true
+
+  textLabel2.Text = "STATUS: ON"
+  textLabel2.TextColor3 = Color3.fromRGB(80, 255, 80)
+
+  textButton2.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+  textButton3.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
+  v3 = tick()
+end
+
+local f4
+
+local function f5()
+  if v1 then
+    f4()
+  else
+    f3()
+  end
+end
+
+function f4()
+  if not v1 then
+    return
+  end
+
+  v1 = false
+
+  textLabel2.Text = "STATUS: OFF"
+  textLabel2.TextColor3 = Color3.fromRGB(255, 80, 80)
+
+  textButton2.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+  textButton3.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+end
+
+runService.Heartbeat:Connect(function()
+  if v1 and v2 > 0 then
+    local v9 = tick()
+
+    if v9 - v3 >= 1 / v2 then
+      pcall(function() mouse1click() end)
+      v3 = v9
+    end
+  end
+end)
+
+textButton2.MouseButton1Click:Connect(f3)
+textButton3.MouseButton1Click:Connect(f4)
+
+local function f6(p3)
+  f2(math.clamp((p3.Position.X - frame4.AbsolutePosition.X) / frame4.AbsoluteSize.X, 0, 1) * 100)
+end
+
+textButton.InputBegan:Connect(function(input4)
+  if input4.UserInputType == Enum.UserInputType.MouseButton1
+    or input4.UserInputType == Enum.UserInputType.Touch then
+    v4 = true
+  end
+end)
+
+frame4.InputBegan:Connect(function(input5)
+  if input5.UserInputType == Enum.UserInputType.MouseButton1
+    or input5.UserInputType == Enum.UserInputType.Touch then
+    f6(input5)
+    v4 = true
+  end
+end)
+
+userInputService.InputChanged:Connect(function(input6)
+  if v4
+    and (input6.UserInputType == Enum.UserInputType.MouseMovement
+      or input6.UserInputType == Enum.UserInputType.Touch) then
+    f6(input6)
+  end
+end)
+
+userInputService.InputEnded:Connect(function(input7)
+  if input7.UserInputType == Enum.UserInputType.MouseButton1
+    or input7.UserInputType == Enum.UserInputType.Touch then
+    v4 = false
+  end
+end)
+
+userInputService.InputBegan:Connect(function(input8, p4)
+  if not p4 and input8.KeyCode == Enum.KeyCode.Q then
+    f5()
+  end
+end)
+
+f2(100)
