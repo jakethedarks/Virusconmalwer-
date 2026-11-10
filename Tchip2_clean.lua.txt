@@ -250,6 +250,37 @@ local function f4(p5, p6)
         v24 = true
       end
 
+      -- NUEVA LÓGICA CON CLAMPING
+      local newX = v25.X.Offset + v26.X
+      local newY = v25.Y.Offset + v26.Y
+
+      local screenSize = p5.Parent.AbsoluteSize
+      local frameSize = p5.AbsoluteSize
+
+      -- Calculamos los límites para que no se salga
+      local maxX = screenSize.X - frameSize.X
+      local maxY = screenSize.Y - frameSize.Y
+
+      -- math.clamp evita que se salga de la pantalla
+      newX = math.clamp(newX, 0, math.max(0, maxX))
+      newY = math.clamp(newY, 0, math.max(0, maxY))
+
+      p5.Position = UDim2.new(v25.X.Scale, newX, v25.Y.Scale, newY)
+    end
+  end)
+
+  return function() return v24 end
+end
+  userInputService.InputChanged:Connect(function(input)
+    if v23
+      and (input.UserInputType == Enum.UserInputType.MouseMovement
+        or input.UserInputType == Enum.UserInputType.Touch) then
+      local v26 = input.Position - position
+
+      if math.abs(v26.X) > 4 or math.abs(v26.Y) > 4 then
+        v24 = true
+      end
+
       p5.Position = UDim2.new(
         v25.X.Scale, v25.X.Offset + v26.X, v25.Y.Scale, v25.Y.Offset + v26.Y
       )
