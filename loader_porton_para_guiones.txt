@@ -1,0 +1,1727 @@
+-- Unpacked by ZeroVector: the script inside the packed file, as it was written
+-- Drakthon key gate.
+--
+--   loadstring(game:HttpGet("https://freetools.one/k/loader.lua"))()
+--
+-- Public on purpose: it holds no secret, only where to ask. The scripts behind
+-- /k/get/ are not.
+--
+-- What the session check is worth, stated honestly: the place, the job id and the
+-- account all arrive from the client, and all three can be read off a live server
+-- from Roblox's own public API. So it stops a script that calls the endpoint
+-- blindly. It does not stop anyone who is willing to look one up first, and this
+-- window should not pretend otherwise. What actually holds the files is that they
+-- never leave the service without a ticket, and that the service checks its own
+-- copy against a manifest before it serves a byte.
+--
+-- On verifying the download here: a hash or a signature in this file cannot
+-- authenticate anything, because this file is fetched from the same place as the
+-- file it would be checking. An attacker who can change the download can change
+-- the expected value too. So there is no integrity check here on purpose, and the
+-- things that do have an effect are TLS and the manifest check on the server
+-- side.
+--
+-- Three steps, and the window says which one you are on:
+--   1  code      press get code
+--   2  offer     open the link, finish it, come back with a key
+--   3  activate  paste the key here and press activate
+--
+-- The window is laid out once in a 460 by 396 space and then scaled to whatever
+-- the screen is, so it fits a phone in portrait and still sits at full size on a
+-- desktop. It can be dragged by the header and cannot be dragged off the edge.
+local SVC = "https://freetools.one/k"
+local UA = "Drakthon/1.0"
+local T_JSON, T_FILE = 25, 90
+
+-- The fixed links the window can put on the clipboard. They live here, in one
+-- place, so a link is never spelled out twice and a gate can check them without
+-- reading the button code.
+--
+-- The discord invite is the same one the front page links to. The first version
+-- of these three buttons carried made-up invites (drakthon, drakthon-server,
+-- drakthon-support) that resolve to nothing, which is worse than not having the
+-- buttons: a person clicking one is told they are being sent somewhere and are
+-- not. Every link here has to be one that exists.
+local DISCORD_URL = "https://discord.gg/W3VwkUj6kf"
+
+-- The server invite. Empty until the real one goes in here. It is left empty on
+-- purpose rather than filled with something plausible: an invented invite sends
+-- people to a server that is not yours, which is the same mistake as the first
+-- version of this button, just less obviously wrong.
+local SERVER_URL = ""
+
+local ACCENT = Color3.fromRGB(91, 141, 240)
+local ACCENT_HI = Color3.fromRGB(122, 166, 255)
+local BG = Color3.fromRGB(13, 16, 22)
+local PANEL = Color3.fromRGB(21, 25, 33)
+local PANEL2 = Color3.fromRGB(28, 33, 43)
+local PANEL3 = Color3.fromRGB(38, 45, 58)
+local LINE = Color3.fromRGB(40, 47, 60)
+local TEXT = Color3.fromRGB(233, 236, 242)
+local DIM = Color3.fromRGB(140, 150, 167)
+local FAINT = Color3.fromRGB(96, 106, 122)
+local GOOD = Color3.fromRGB(56, 199, 125)
+local BAD = Color3.fromRGB(240, 96, 96)
+
+-- the design size. Every position below is measured from here, and nothing in
+-- the window uses a number that is not derived from it, which is what lets the
+-- whole thing scale by one factor and stay put.
+local W = 460
+local PAD = 24
+
+-- ---------------------------------------------------------------- environment
+-- One table for everything this window keeps between runs: the device id and
+-- the activated key.
+--
+-- It used to answer getgenv().shared when that existed and getgenv() itself
+-- when it did not. rememberKey then created shared, so on the next run host()
+-- answered a different table than the one the id was written to, found nothing
+-- and minted a new id. A key belongs to a device now, so that broke the key on
+-- the second run, which is the run that matters.
+local function host()
+    local g = getgenv and getgenv()
+    if type(g) ~= "table" then return nil end
+    local sh = rawget(g, "shared")
+    if type(sh) ~= "table" then sh = {} rawset(g, "shared", sh) end
+    return sh
+end
+
+-- The file the device id and the key live in. It has to be declared here and not
+-- down with the rest of the key store, because storedDevice and writeDevice both
+-- read it and they sit above that block. A local read above its own declaration
+-- does not see itself: the name resolves to a global nil, so the readfile fails,
+-- storedDevice answers nil for every run and writeDevice refuses every write.
+local KEY_FILE = "drakthon_key.txt"
+
+-- A label for this client, not a lock. The service used to compare it and refuse
+-- a key on a mismatch, which broke as soon as getgenv was cleared and a new id
+-- appeared, so the same person was told their own key belonged to another device.
+-- It is still sent, because the service records it for revocation and the logs.
+-- Line one of the file is the device, and it is written on its own rather than
+-- as part of the key, because it exists before there is any key at all. A person
+-- who has never bought anything still needs the same id every time.
+local function storedDevice()
+    if type(readfile) ~= "function" then return nil end
+    local ok, body = pcall(readfile, KEY_FILE)
+    if not ok or type(body) ~= "string" or body == "" then return nil end
+    local first = body:match("^([^\n]+)")
+    if type(first) == "string" and first:sub(1, 3) == "dk-" then return first end
+    return nil
+end
+
+local function writeDevice(id)
+    if type(writefile) ~= "function" then return false end
+    pcall(function() if type(make_writeable) == "function" then
+        make_writeable(KEY_FILE)
+    end end)
+    -- Read the whole file first and put it back with the device on top. If the
+    -- read fails the write does not happen at all.
+    --
+    -- It used to fall through to an empty string, which meant an executor that
+    -- could not read the file for any reason, a locked file or a half written
+    -- one, silently rewrote it down to the device alone. The key was still on the
+    -- same machine, in the same file, and it was thrown away.
+    local ok, body = pcall(readfile, KEY_FILE)
+    if not ok or type(body) ~= "string" or body == "" then return false end
+    local rest = body:match("^[^^\n]*\n(.*)$")
+    if not rest then return false end
+    return pcall(writefile, KEY_FILE, id .. "\n" .. rest) and true or false
+end
+
+local function device()
+    local h = host()
+    -- The file first, because getgenv is rebuilt when the executor restarts and
+    -- a new id means a new device to the service.
+    --
+    -- A key belongs to the device that redeemed it, so a key that outlived a
+    -- restart while its device id did not came back as a key that had already
+    -- been activated by somebody else. The window cleared a key the person had
+    -- paid for, every single time they reopened it.
+    local held = storedDevice()
+    if held then return held end
+    if type(h) ~= "table" then return "unavailable" end
+    local id = rawget(h, "drakthon_device")
+    if type(id) == "string" and #id >= 8 then
+        writeDevice(id)
+        return id
+    end
+    -- hex only: this id travels in a query string
+    local bytes = {}
+    for i = 1, 4 do
+        bytes[i] = string.format("%08x", math.random(0, 0x7fffffff))
+    end
+    id = "dk-" .. tostring(game.PlaceId) .. "-" .. table.concat(bytes)
+    rawset(h, "drakthon_device", id)
+    writeDevice(id)
+    return id
+end
+
+-- The account id. LocalPlayer is not there the instant a script runs on some
+-- executors, and this used to report 0 in that case, which the service refuses as
+-- "user is not a user id" and the window showed as the executor not reporting the
+-- game. It waits briefly instead, and says so if it never arrives.
+local function uid()
+    for _ = 1, 40 do
+        local ok, u = pcall(function()
+            return game:GetService("Players").LocalPlayer.UserId
+        end)
+        if ok and type(u) == "number" and u > 0 then return u end
+        task.wait(0.05)
+    end
+    return 0
+end
+
+-- ---------------------------------------------------------------- net
+local function tableAt(t, n)
+    if type(t) ~= "table" then return nil end
+    local ok, v = pcall(function() return t[n] end)
+    if ok and type(v) == "table" then return v end
+    return nil
+end
+
+-- Executors disagree on where the http function lives. Asking one name and
+-- giving up is why this used to work on some and report "no answer" on others.
+local function httpfn()
+    local g = getgenv and getgenv()
+    -- built by appending, not in one literal: a nil in the middle of a table
+    -- constructor makes a hole, and ipairs stops at a hole, so on a build with no
+    -- getgenv the syn and http namespaces below were never even looked at
+    local holders = { _G }
+    for _, v in ipairs({ g, tableAt(_G, "syn"), tableAt(_G, "http"),
+                         tableAt(_G, "Syn"), tableAt(_G, "Http") }) do
+        if type(v) == "table" then holders[#holders + 1] = v end
+    end
+    local names = { "request", "syn_request", "http_request" }
+    for _, holder in ipairs(holders) do
+        if type(holder) == "table" then
+            for _, n in ipairs(names) do
+                local ok, f = pcall(function() return holder[n] end)
+                if ok and type(f) == "function" then return f end
+            end
+        end
+    end
+    return nil
+end
+
+local function bodyOf(res)
+    -- ordinary indexing, not rawget: some executors hand back a table whose
+    -- fields come from a metatable, and rawget does not see those
+    local ok, b = pcall(function()
+        return res.Body or res.body or res.text or res.Content or res.content
+    end)
+    if not ok then return nil end
+    if type(b) == "string" and #b > 0 then return b end
+    if type(b) == "table" then
+        -- some executors hand the body back as an array of byte values
+        local t = {}
+        for i = 1, #b do t[i] = string.char(b[i] % 256) end
+        local s = table.concat(t)
+        if #s > 0 then return s end
+    end
+    return nil
+end
+
+-- A hung request used to leave the window stuck on "waiting" forever, because
+-- nothing ever came back to clear it. Every call is now bounded.
+local function await(fn, seconds)
+    local out, done = nil, false
+    task.spawn(function()
+        local ok, v = pcall(fn)
+        if ok then out = v end
+        done = true
+    end)
+    for _ = 1, seconds * 20 do
+        if done then break end
+        task.wait(0.05)
+    end
+    return out
+end
+
+-- Returns the body on any status that carries one, including the 4xx that the
+-- refusals arrive on. Their text is the only useful thing in them.
+local function call(method, path, body, seconds)
+    seconds = seconds or T_JSON
+    local url = SVC .. path
+    local fn = httpfn()
+    if fn then
+        local rq = { Url = url, Method = method, Headers = { ["User-Agent"] = UA } }
+        if body then
+            rq.Body = body
+            rq.Headers["Content-Type"] = "application/json"
+        end
+        local txt = await(function()
+            local ok, res = pcall(fn, rq)
+            if not ok or type(res) ~= "table" then return nil end
+            return bodyOf(res)
+        end, seconds)
+        if txt then return txt end
+        return nil, "no answer"
+    end
+    -- HttpGet can only GET. Falling through to it for a POST sent the body-less
+    -- GET and the user saw a refusal about a method that was never the problem.
+    if method ~= "GET" then return nil, "no post" end
+    local ok, txt = pcall(function() return game:HttpGet(url, true) end)
+    if ok and type(txt) == "string" and #txt > 0 then return txt end
+    return nil, "no answer"
+end
+
+local function jstr(s)
+    s = tostring(s)
+    s = s:gsub("\\", "\\\\"):gsub('"', '\\"')
+    s = s:gsub("\n", "\\n"):gsub("\r", "\\r"):gsub("\t", "\\t")
+    -- any other control character, which is not legal raw inside a json string
+    s = s:gsub("[%z\1-\31]", function(c)
+        return string.format("\\u%04x", string.byte(c))
+    end)
+    return '"' .. s .. '"'
+end
+
+local function jsonenc(t)
+    local out, first = {}, true
+    for k, v in pairs(t) do
+        if not first then out[#out + 1] = "," end
+        first = false
+        out[#out + 1] = jstr(k) .. ":" .. jstr(v)
+    end
+    return "{" .. table.concat(out) .. "}"
+end
+
+-- One field out of a json object, by a scanner rather than a pattern. The
+-- pattern could not see an escaped quote and would happily match a key that
+-- happened to appear inside a string value, which is how a refusal message
+-- containing the word code turned into a key.
+local function scanString(s, i)
+    -- s[i] is the opening quote; returns the value and the index after the close
+    local out = {}
+    i = i + 1
+    while i <= #s do
+        local c = s:sub(i, i)
+        if c == "\\" then
+            local n = s:sub(i + 1, i + 1)
+            if n == "n" then out[#out + 1] = "\n"
+            elseif n == "t" then out[#out + 1] = "\t"
+            elseif n == "r" then out[#out + 1] = "\r"
+            elseif n == "u" then out[#out + 1] = "?"
+            else out[#out + 1] = n end
+            i = i + 2
+        elseif c == '"' then
+            return table.concat(out), i + 1
+        else
+            out[#out + 1] = c
+            i = i + 1
+        end
+    end
+    return nil, i
+end
+
+-- The real decoder, when this executor has one. HttpService is present on nearly
+-- everything and handles nesting, numbers and booleans properly, which the
+-- scanner below does not: it matches a name at any depth, and it turns \uXXXX
+-- into a question mark. It stays as the fallback for the executors that do not.
+local function jsonDecode(s)
+    local ok, svc = pcall(function()
+        return game:GetService("HttpService")
+    end)
+    if not ok or type(svc) ~= "table" or type(svc.JSONDecode) ~= "function" then
+        return nil
+    end
+    local ok2, r = pcall(svc.JSONDecode, svc, s)
+    if ok2 and type(r) == "table" then return r end
+    return nil
+end
+
+local function field(s, k)
+    if type(s) ~= "string" then return nil end
+    local i = 1
+    local n = #s
+    while i <= n do
+        local c = s:sub(i, i)
+        if c == '"' then
+            local name, after = scanString(s, i)
+            i = after
+            -- only a top level name counts: the nesting is not tracked, so a
+            -- nested key with the same name is ignored by the depth check below
+            if name == k then
+                local j = i
+                while j <= n and s:sub(j, j):match("%s") do j = j + 1 end
+                if s:sub(j, j) == ":" then
+                    j = j + 1
+                    while j <= n and s:sub(j, j):match("%s") do j = j + 1 end
+                    if s:sub(j, j) == '"' then
+                        local v = scanString(s, j)
+                        return v
+                    end
+                    -- A bare true or false is an answer too, and this scanner used
+                    -- to walk straight past it.
+                    --
+                    -- readField learned to read a boolean off the real decoder,
+                    -- but the scanner is what runs when there is no working
+                    -- JSONDecode, which is every executor without a real
+                    -- HttpService. On those, every question of the form is this key
+                    -- still good came back empty, a good key read as refused, and
+                    -- the window cleared it. The same hole, one layer down.
+                    if s:sub(j, j + 3) == "true" then return "true" end
+                    if s:sub(j, j + 4) == "false" then return "false" end
+                    -- and a number, which is what every expiry is
+                    if s:sub(j, j):match("%d") then
+                        local num = s:match("^[%d]+%.?%d*", j)
+                        if num then return num end
+                    end
+                end
+            end
+        else
+            i = i + 1
+        end
+    end
+    return nil
+end
+
+local function trim(s)
+    return (tostring(s or ""):gsub("%s+", ""))
+end
+
+-- Percent encoding for a query string. Everything the loader puts in one is
+-- already safe by construction, the ticket is base64url and the device id is hex,
+-- so this is hygiene rather than a fix for something that was breaking.
+local function enc(v)
+    return (tostring(v):gsub("[^%w%-%._~]", function(c)
+        return string.format("%%%02X", string.byte(c))
+    end))
+end
+
+-- The link goes to the chooser, not straight to the offer. It used to point at
+-- /sys/<code>, which is the Linkvertise page, so a visitor had no way to reach
+-- LootLabs and the chooser built for them was never shown to anybody.
+local function linkfor(code)
+    return SVC .. "/choose?t=" .. enc(code)
+end
+
+-- ------------------------------------------------------------- the key store
+-- Once an account has spent a key, it should not be asked for one again: the
+-- window comes up with the field already filled and the activate button ready.
+--
+-- This was taken out once because the key was written into shared, a global any
+-- other script in the executor can read. It goes back in with two things that
+-- were not there before:
+--
+--   the copy is stamped with the account it belongs to and is only ever handed
+--     back to that same account, so a script that reads it gets a key it cannot
+--     use
+--   and that is only a convenience. The real lock is on the service: the first
+--     account to redeem a key owns it until it expires and every other account is
+--     refused by name. Reading this copy gains an attacker nothing the service
+--     was not already refusing them.
+local KEY_SLOT = "drakthon_key"
+local DEV_SLOT = "drakthon_device"
+
+-- Somewhere that outlives the session. getgenv does not: it is rebuilt when the
+-- executor restarts, so closing Roblox lost the key and the next run asked for
+-- one again, which is the whole thing this is meant to stop.
+--
+-- A file does. Not every executor has one, and the ones that do disagree about
+-- whether the path needs to be made writable first, so it is tried and anything
+-- that goes wrong falls back to getgenv rather than taking the window down. The
+-- key is stamped with the account it belongs to on the way in and checked on
+-- the way out, so a file somebody else can read still only ever yields a key to
+-- the account that bought it, and the service refuses that key to anyone else
+-- regardless of what is written down anywhere.
+local function fileRead()
+    if type(readfile) ~= "function" then return nil end
+    local ok, body = pcall(readfile, KEY_FILE)
+    if ok and type(body) == "string" and body ~= "" then return body end
+    return nil
+end
+
+local function fileWrite(body)
+    if type(writefile) ~= "function" then return false end
+    -- Some executors refuse a path until it is made writable. Harmless where it
+    -- is not needed, so it is attempted quietly before the write.
+    pcall(function() if type(make_writeable) == "function" then
+        make_writeable(KEY_FILE)
+    end end)
+    local ok = pcall(writefile, KEY_FILE, body)
+    return ok and true or false
+end
+
+local function envRead()
+    local sh = host()
+    local rec = type(sh) == "table" and rawget(sh, KEY_SLOT) or nil
+    return type(rec) == "table" and rec or nil
+end
+
+local function envWrite(rec)
+    local sh = host()
+    if type(sh) == "table" then rawset(sh, KEY_SLOT, rec) end
+end
+
+-- expires is the absolute time the service gave, so a window opened tomorrow
+-- still counts down to the right moment rather than to one hour from now.
+local function rememberKey(key, who, expires)
+    local rec = { key = key, user = who or uid(), at = os.time(),
+                  expires = tonumber(expires) or 0 }
+    envWrite(rec)
+    fileWrite(string.format("%s\n%s\n%s\n%d", device(), rec.key, tostring(rec.user),
+                            math.floor(rec.expires)))
+end
+
+-- Drop a stored key. A key that has expired or been revoked is worse than no
+-- key, because the window would go on offering it.
+local function forgetKey()
+    envWrite(nil)
+    pcall(function() if type(delfile) == "function" then delfile(KEY_FILE) end end)
+end
+
+-- Returns the stored key only when it belongs to the account asking for it.
+local function recallKey()
+    local rec = envRead()
+    if not rec then
+        local body = fileRead()
+        if body then
+            -- line one is the device and is not ours to read here
+            local k, u, e = body:match("^[^\n]+\n([^\n]+)\n([^\n]*)\n?(%d*)")
+            if k and k ~= "" then rec = { key = k, user = u, expires = tonumber(e) or 0 } end
+        end
+    end
+    if type(rec) ~= "table" then return nil end
+    if tostring(rec.user) ~= tostring(uid()) then return nil end
+    if type(rec.key) ~= "string" or rec.key == "" then return nil end
+    return rec.key, tonumber(rec.expires) or 0
+end
+
+-- ---------------------------------------------------------------- ui helpers
+-- Connecting an event a given executor does not provide used to take the whole
+-- window down with it. Every connection goes through here, and a missing one
+-- costs a hover colour instead of the gate.
+local CONN = {}
+
+local function on(obj, signal, fn)
+    local ok, c = pcall(function() return obj[signal]:Connect(fn) end)
+    if ok and c then CONN[#CONN + 1] = c end
+    return ok and c or nil
+end
+
+local function make(class, props, parent)
+    local o = Instance.new(class)
+    for k, v in pairs(props or {}) do pcall(function() o[k] = v end) end
+    if parent then o.Parent = parent end
+    return o
+end
+
+local function round(o, r)
+    make("UICorner", { CornerRadius = UDim.new(0, r or 10) }, o)
+end
+
+local function outline(o, c, t)
+    make("UIStroke", { Color = c, Thickness = t or 1,
+                       ApplyStrokeMode = Enum.ApplyStrokeMode.Border }, o)
+end
+
+local function hover(b, lo, hi)
+    on(b, "MouseEnter", function() b.BackgroundColor3 = hi end)
+    on(b, "MouseLeave", function() b.BackgroundColor3 = lo end)
+end
+
+local function press(b, up, down)
+    on(b, "MouseButton1Down", function() b.BackgroundColor3 = down or up end)
+    on(b, "MouseButton1Up", function() b.BackgroundColor3 = up end)
+end
+
+local function label(name, parent, x, y, w, h, size, col, font, align)
+    return make("TextLabel", {
+        Name = name, Size = UDim2.fromOffset(w, h), Position = UDim2.fromOffset(x, y),
+        BackgroundTransparency = 1, Text = "", Font = font, TextSize = size,
+        TextColor3 = col, TextXAlignment = align or Enum.TextXAlignment.Left,
+    }, parent)
+end
+
+-- ---------------------------------------------------------------- layout
+-- Every row is one call, so nothing in the window has a hard coded y. The whole
+-- layout is a list and the window is measured from it, which is what makes it
+-- possible to grow the window by adding a row instead of renumbering it.
+local Y = {}
+Y.head = 0
+Y.rule = Y.head + 92
+Y.steps = Y.rule + 2 + 14
+Y.caption = Y.steps + 16 + 14
+Y.box = Y.caption + 15 + 6
+Y.status = Y.box + 44 + 16
+Y.buttons = Y.status + 48 + 12
+Y.links = Y.buttons + 42 + 10
+-- The device id used to sit under the buttons on a line of its own, and a line
+-- under that used to print the code. Both are gone. The id is still sent on
+-- every request, because the service records it for revocation and for the logs,
+-- but printing it told the user nothing they could act on.
+--
+-- The window is exactly as tall as the last row plus its padding. Declaring the
+-- height by hand and letting the rows run past it is how the note ended up
+-- clipped off the bottom once already: the number said 396 while the rows
+-- needed 416, and the source read as though it fitted.
+local H = Y.links + 30 + 16 + PAD
+
+-- ---------------------------------------------------------------- window
+local function build()
+    local dev = device()
+    local core = game:GetService("CoreGui")
+
+    -- running the loader twice used to stack two windows on top of each other,
+    -- both of them taking clicks
+    for _, c in ipairs(core:GetChildren()) do
+        if c.Name == "DrakthonGate" then pcall(function() c:Destroy() end) end
+    end
+
+    local gui = make("ScreenGui", {
+        Name = "DrakthonGate", ResetOnSpawn = false,
+        ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+        -- covers the whole screen, so gui coordinates and screen coordinates are
+        -- the same numbers and a pointer position can be compared with the
+        -- window's own directly
+        IgnoreGuiInset = true,
+    }, core)
+
+    -- The anchor is zero and the position is a scale, so the top left of the
+    -- window is the point everything is measured from.
+    -- It used to be a scale of 0.5 with a centred anchor, which reads as correct
+    -- until anything moves the window: the drag then assigned
+    -- UDim2.fromOffset(startX + delta), and startX was Position.X.Offset, which
+    -- for a scale position is 0. Every drag threw the window at the top left
+    -- corner instead of following the pointer.
+    local root = make("Frame", {
+        Name = "Root", Size = UDim2.fromOffset(W, H),
+        -- Position is a scale and the offset stays at zero, always.
+    --
+    -- UIScale and offset based positioning do not mix: the object jumps by
+    -- Offset * (Scale - 1) when it is dragged, and UIPadding multiplies the jump
+    -- again. Every position in this window is therefore written as a fraction of
+    -- the screen with no pixel term at all, which is the form that does not jump.
+    -- It also means the centre comes from the ScreenGui's own size rather than
+    -- from whatever the game says the viewport is.
+    Position = UDim2.fromScale(0.5, 0.5), AnchorPoint = Vector2.new(0, 0),
+        BackgroundColor3 = BG, BorderSizePixel = 0, Active = true,
+    }, gui)
+    round(root, 16); outline(root, LINE)
+
+    -- ---------------------------------------------------- fit to the screen
+    -- One UIScale on the root, set from the viewport, so every child keeps its
+    -- absolute position inside the 460 by 396 design space and the window lands
+    -- at full size on a desktop and shrinks on a phone instead of hanging off
+    -- the side of it. Recomputed when the viewport changes, which is what happens
+    -- when a phone is rotated or a window is resized on a desktop.
+    local scaler
+    pcall(function()
+        scaler = make("UIScale", { Scale = 1 }, root)
+    end)
+
+    -- The size of the screen, or a guess if the game will not say.
+    --
+    -- This used to check `type(vs) ~= "Vector2"`. In Roblox a Vector2 is userdata,
+    -- so type() never returns the string "Vector2" and the check threw away every
+    -- real reading and fell through to a hard coded 1920 by 1080. Every size was
+    -- therefore measured against a screen the display might not be, which is what
+    -- put the window out at the far right on anything smaller than that, and why
+    -- it never shrank to fit. The test is on the fields, which works for a
+    -- Vector2, for a plain table on the builds that hand one back, and for
+    -- anything else that carries numbers.
+    -- The last viewport that was actually read, kept because the camera is not
+    -- always there. Roblox replaces workspace.CurrentCamera for a frame or two
+    -- whenever the client resizes, opens a menu, joins a place or swaps camera,
+    -- and ViewportSize reads as nothing during that.
+    --
+    -- It used to answer 1920x1080 for those frames. That is a plausible number
+    -- and a wrong one on every screen that is not 1920x1080, and it is read by
+    -- topLeft() on the very frame the drag begins: the grab point was computed
+    -- against a screen the window is not on, so the first move wrote that
+    -- mistaken origin back as the new position and the window jumped sideways.
+    -- On a 1280 wide window the error is (1920-1280) * scale, which is 243
+    -- pixels at full size.
+    --
+    -- The fallback is now the last size that was really read, so a camera that
+    -- blinks costs nothing. 1920x1080 is only used before anything has been read
+    -- at all, which is the first frame and is over before anyone can press.
+    local lastVW, lastVH = 1920, 1080
+
+    local function viewSize()
+        local vs = nil
+        pcall(function()
+            local cam = workspace and workspace.CurrentCamera
+            vs = cam and cam.ViewportSize or nil
+        end)
+        local okx, x = pcall(function() return vs and vs.X end)
+        local oky, y = pcall(function() return vs and vs.Y end)
+        if okx and oky and type(x) == "number" and type(y) == "number"
+            and x >= 100 and y >= 100 then
+            lastVW, lastVH = x, y
+            return x, y
+        end
+        return lastVW, lastVH
+    end
+
+    -- keepOnScreen is declared before fit because fit calls it: as two separate
+    -- local functions in one order, fit's reference resolved to a global nil and
+    -- every build threw here, which is why the window fell back to the log.
+    local keepOnScreen
+    -- declared before fit, which reads them
+    local dragging = false
+    local moved = false
+    -- keepOnScreen only acts during a drag, so the wheel needs to borrow that
+    local clamping = false
+
+    -- Where the window's top left is on the screen, and how to put it there.
+    -- Everything goes through these two, so there is one place that converts
+    -- between pixels and the scale position, and one rule: no pixel term.
+    -- The window's top left, in screen pixels.
+    --
+    -- This reads the scale Position and nothing else, because that is the exact
+    -- inverse of setTopLeft and, more importantly, because it is current. It used
+    -- to prefer AbsolutePosition, which Roblox only recomputes on the next layout
+    -- pass: the drag wrote a new position and then, in the same frame, clamped by
+    -- reading the position from before the write, so the window was yanked back to
+    -- where it had been and jumped forward again on the next frame. That was the
+    -- jump on every drag.
+    local function topLeft()
+        local vw, vh = viewSize()
+        local pos = root.Position
+        return (pos.X.Scale or 0) * vw, (pos.Y.Scale or 0) * vh
+    end
+
+    local function setTopLeft(px, py)
+        local vw, vh = viewSize()
+        if vw <= 0 or vh <= 0 then return end
+        root.Position = UDim2.fromScale(px / vw, py / vh)
+    end
+
+    -- Putting it back in the middle, in the same units as everything else.
+    -- The rows that sit under the status line and move when it grows. Declared
+    -- here, above the buttons, because they are filled from the buttons: as it
+    -- was, the assignment ran before this declaration and wrote a global named
+    -- lower, and then this line made a fresh empty local that resize walked. The
+    -- window grew and nothing else moved, which is the third time this file has
+    -- read a local above its own declaration.
+    local lower, lastExtra = {}, 0
+
+    -- The window's current height. H is the design height and the status line
+    -- makes it taller; everything that measures the window reads this. Declared
+    -- above centre() because centre() reads it, and a local read above its own
+    -- declaration is a global nil, which is what just happened here.
+    local liveH = H
+
+    local function centre()
+        local vw, vh = viewSize()
+        local sx = scaler and scaler.Scale or 1
+        if sx <= 0 then sx = 1 end
+        setTopLeft((vw - W * sx) / 2, (vh - liveH * sx) / 2)
+    end
+
+    -- a margin so the window never sits flush against an edge, and a floor so a
+    -- very small window stays readable rather than shrinking to nothing
+    local function fit()
+        local vw, vh = viewSize()
+        if scaler then
+            local s = math.min((vw - 32) / W, (vh - 96) / H)
+            scaler.Scale = math.clamp(s, 0.42, 1)
+        end
+        -- centred, and only until the user has moved it. Refitting after a drag
+        -- used to throw the window back to the middle every time the screen
+        -- changed, which is what makes a rotated phone feel like it is fighting
+        -- the window.
+        if not moved and not dragging then
+            centre()
+        elseif dragging and keepOnScreen then
+            keepOnScreen()
+        end
+    end
+
+    -- Whether the window has been taken off the screen. Declared here because
+    -- closegui() assigns it and closegui is defined below this line: as it was,
+    -- that assignment wrote a global named closed and pull() read this local,
+    -- which stayed false for the whole life of the window.
+    local closed = false
+
+    -- ---------------------------------------------------- drag
+    -- The pointer is tracked as a delta from the moment of the press, so the
+    -- window keeps the exact spot it was grabbed and cannot drift.
+    --
+    -- moved is whether the user has put the window somewhere. Refitting the
+    -- screen after a drag must not drag the window back to the middle, and
+    -- dragging is only true while the pointer is down, so it cannot answer that
+    -- on its own.
+    -- declared here because the drag helpers below are written before the header
+    -- is made. It was a local declared below them, so the reference resolved to
+    -- a global nil and the cursor never went back to a grab.
+    local head
+    -- the link buttons are built above both of these and call them on click, and
+    -- a local read above its own declaration is a global nil, not an error
+    local say, clipboard
+
+    -- Clamp a candidate top left and write it. Taking the position as an argument
+    -- is what stops the read-back: the drag knows where it is putting the window,
+    -- so it clamps that number instead of asking the object where it ended up.
+    local function placeClamped(px, py)
+        local vw, vh = viewSize()
+        local sx = scaler and scaler.Scale or 1
+        if sx <= 0 then sx = 1 end
+        local w, ht = W * sx, liveH * sx
+        -- How much of the window has to stay on screen. It used to be a 90 pixel
+        -- strip, which meant a drag could bury all but a sliver of the window in a
+        -- corner and leave nothing to grab: the window looked stuck there and the
+        -- only way out was a guess. Half the width is enough to drag by.
+        --
+        -- Upwards is different from sideways. The old bound was minY = 0, so the
+        -- window could never be lifted above the top of the screen at all, which
+        -- is what a person dragging it upwards finds out about it. It may now go
+        -- up until only the header strip would be left showing.
+        local keepX = math.min(240, w * 0.5)
+        local minX = -w + keepX
+        local maxX = vw - keepX
+        if maxX < minX then maxX = minX end
+        local minY = -ht + 56
+        local maxY = vh - 56
+        if maxY < minY then maxY = minY end
+        if px < minX then px = minX end
+        if px > maxX then px = maxX end
+        if py < minY then py = minY end
+        if py > maxY then py = maxY end
+        setTopLeft(px, py)
+    end
+
+    -- Only while a drag is in progress. Clamping on every fit would fight the
+    -- layout: the window is centred on open, and if the screen is smaller than the
+    -- design it would be shoved into a corner instead.
+    keepOnScreen = function()
+        if not dragging and not clamping then return end
+        local x, y = topLeft()
+        placeClamped(x, y)
+    end
+
+
+    -- ---------------------------------------------------- header
+    head = make("Frame", {
+        Name = "Head", Size = UDim2.new(1, 0, 0, 92),
+        Position = UDim2.fromOffset(0, Y.head),
+        BackgroundColor3 = PANEL, BorderSizePixel = 0, Active = true,
+    }, root)
+    round(head, 16)
+    -- square off the header's bottom corners so it meets the body cleanly
+    make("Frame", { Name = "Patch", Size = UDim2.new(1, 0, 0, 16),
+                    Position = UDim2.fromOffset(0, 76), BackgroundColor3 = PANEL,
+                    BorderSizePixel = 0 }, head)
+    -- a hairline under the header, fading out to the right
+    -- A UIGradient multiplies the colour it sits on, it does not replace it, so
+    -- anything carrying one is left white and given its colour by the gradient.
+    -- ACCENT under an ACCENT gradient came out at roughly half the brightness and
+    -- the hover colour was multiplied the same way.
+    local rule = make("Frame", {
+        Name = "Rule", Size = UDim2.new(1, 0, 0, 2),
+        Position = UDim2.fromOffset(0, Y.rule), BackgroundColor3 = Color3.new(1, 1, 1),
+        BorderSizePixel = 0,
+    }, root)
+    make("UIGradient", {
+        Color = ColorSequence.new(ACCENT, ACCENT),
+        Transparency = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 0.55), NumberSequenceKeypoint.new(1, 1),
+        }),
+    }, rule)
+
+    local title = label("Title", head, PAD, 14, W - 100, 32, 25, TEXT,
+                        Enum.Font.GothamBlack)
+    title.Text = "DRAKTHON"
+    title.TextColor3 = Color3.new(1, 1, 1)
+    make("UIGradient", { Color = ColorSequence.new(ACCENT, Color3.fromRGB(160, 205, 255)) },
+         title)
+
+    local sub = label("Sub", head, PAD, 50, W - 100, 15, 12, DIM, Enum.Font.Gotham)
+    sub.Text = "key gate"
+    -- The header is the drag handle. It has to be Active, or InputBegan never
+    -- fires on it at all, and the two labels sitting on top of it have to be
+    -- Active too, or they swallow the click before it reaches the frame: a
+    -- TextLabel with Active false still takes the hit, it just does not report
+    -- it upward. That is why dragging worked nowhere except the bare strip of
+    -- header between the title and the close button.
+    head.Active = true
+    title.Active = true
+    sub.Active = true
+    -- a cursor that says the header is a handle
+    pcall(function()
+        head.MouseIcon = "grab"
+        title.MouseIcon = "grab"
+        sub.MouseIcon = "grab"
+    end)
+
+    -- Measured from the window's own width rather than anchored with a negative
+    -- offset. Under a UIScale a scale of 1 with a pixel offset is the form that
+    -- jumps by Offset * (Scale - 1), and this was the last one left in the window.
+    local close = make("TextButton", {
+        Name = "Close", Size = UDim2.fromOffset(28, 28),
+        Position = UDim2.fromOffset(W - PAD - 28, 16),
+        BackgroundColor3 = PANEL2, BorderSizePixel = 0, Text = "",
+        AutoButtonColor = false, ZIndex = 2,
+    }, head)
+    round(close, 9)
+    hover(close, PANEL2, Color3.fromRGB(64, 46, 50))
+    pcall(function() close.MouseIcon = "pointer" end)
+    make("TextLabel", {
+        Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, Text = "x",
+        Font = Enum.Font.GothamBold, TextSize = 15, TextColor3 = DIM, ZIndex = 3,
+    }, close)
+
+    -- ---------------------------------------------------- steps
+    local STEPS = { "code", "offer", "activate" }
+    local cells = {}
+    local colw = math.floor((W - PAD * 2 - 16) / 3)
+    for i, word in ipairs(STEPS) do
+        local x = PAD + (i - 1) * (colw + 8)
+        local d = make("Frame", {
+            Name = "StepDot" .. i, Size = UDim2.fromOffset(6, 6),
+            Position = UDim2.fromOffset(x, Y.steps + 5),
+            BackgroundColor3 = LINE, BorderSizePixel = 0,
+        }, root)
+        round(d, 3)
+        local l = label("StepText" .. i, root, x + 14, Y.steps, colw - 14, 16, 11,
+                        FAINT, Enum.Font.GothamBold)
+        l.Text = word
+        cells[i] = { dot = d, text = l }
+    end
+
+    local function setStep(n)
+        for i, c in ipairs(cells) do
+            local done, now = i < n, i == n
+            c.dot.BackgroundColor3 = done and GOOD or (now and ACCENT or LINE)
+            c.text.TextColor3 = done and GOOD or (now and TEXT or FAINT)
+        end
+    end
+    setStep(1)
+
+    -- ---------------------------------------------------- key field
+    local cap = label("CodeLabel", root, PAD, Y.caption, W - PAD * 2, 15, 11, FAINT,
+                      Enum.Font.GothamBold)
+    cap.Text = "YOUR CODE OR KEY"
+
+    local box = make("TextBox", {
+        Name = "CodeBox", Size = UDim2.fromOffset(W - PAD * 2, 44),
+        Position = UDim2.fromOffset(PAD, Y.box),
+        BackgroundColor3 = PANEL2, BorderSizePixel = 0,
+        -- Nothing in this field when it opens. No placeholder, no hint, no
+        -- default. Grey words sitting in a field read as if something had
+        -- already been typed into it and the user has to clear them before they
+        -- can paste, and every version that had one said so. The label above
+        -- says what the field is for; the field says nothing.
+        Text = "",
+        PlaceholderText = "",
+        PlaceholderColor3 = FAINT, ClearTextOnFocus = false,
+        TextColor3 = TEXT, Font = Enum.Font.Code,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        -- One line, and cut at the edge rather than run off it.
+        --
+        -- It wrapped to a second line before, which showed all of it. It is
+        -- wrapped in a field somebody pastes into and then reads back, and a
+        -- hundred and fifty characters at a readable size will not fit on one
+        -- line whatever the size is. Showing the start and an ellipsis says
+        -- honestly that there is more, and the whole of it is still there to be
+        -- selected and copied.
+        TextSize = 12,
+        TextWrapped = false,
+        TextTruncate = Enum.TextTruncate.AtEnd,
+    }, root)
+    round(box, 11)
+    local boxline = outline(box, LINE)
+    -- focus had no visible result, so there was no telling which field was live
+    on(box, "FocusGained", function() boxline.Color = ACCENT end)
+    on(box, "FocusLost", function() boxline.Color = LINE end)
+
+    -- ---------------------------------------------------- status
+    local dot = make("Frame", {
+        Name = "Dot", Size = UDim2.fromOffset(8, 8),
+        Position = UDim2.fromOffset(PAD + 2, Y.status + 8),
+        BackgroundColor3 = FAINT, BorderSizePixel = 0,
+    }, root)
+    round(dot, 4)
+
+    local status = label("Status", root, PAD + 20, Y.status, W - PAD * 2 - 20, 48, 13,
+                         DIM, Enum.Font.Gotham)
+    status.TextYAlignment = Enum.TextYAlignment.Top
+    status.TextWrapped = true
+    -- The window is as tall as its status line needs it to be. A refusal is three
+    -- lines of text and "Running." is one, and a fixed height either wastes the
+    -- space or clips the message, so the label grows and the window follows it.
+    pcall(function() status.AutomaticSize = Enum.AutomaticSize.Y end)
+    status.Size = UDim2.fromOffset(W - PAD * 2 - 20, 48)
+    status.Text = "Paste your key here, or press get code."
+
+    -- ---------------------------------------------------- buttons
+    local function button(name, text, x, w, accent)
+        local b = make("TextButton", {
+            Name = name, Size = UDim2.fromOffset(w, 42),
+            Position = UDim2.fromOffset(x, Y.buttons),
+            BackgroundColor3 = (accent and Color3.new(1, 1, 1)) or PANEL2,
+            BorderSizePixel = 0,
+            Text = text, Font = Enum.Font.GothamBold, TextSize = 14,
+            TextColor3 = accent and Color3.fromRGB(8, 16, 28) or TEXT,
+            AutoButtonColor = false,
+        }, root)
+        round(b, 11)
+        if accent then
+            -- white underneath, coloured by the gradient, and the hover moves the
+            -- gradient rather than the background
+            local g = make("UIGradient", {
+                Color = ColorSequence.new(ACCENT, ACCENT_HI), Rotation = 90,
+            }, b)
+            b.BackgroundColor3 = Color3.new(1, 1, 1)
+            on(b, "MouseEnter", function()
+                g.Color = ColorSequence.new(ACCENT_HI, Color3.fromRGB(150, 190, 255))
+            end)
+            on(b, "MouseLeave", function()
+                g.Color = ColorSequence.new(ACCENT, ACCENT_HI)
+            end)
+            on(b, "MouseButton1Down", function()
+                g.Color = ColorSequence.new(Color3.fromRGB(70, 112, 200), ACCENT)
+            end)
+            on(b, "MouseButton1Up", function()
+                g.Color = ColorSequence.new(ACCENT_HI, Color3.fromRGB(150, 190, 255))
+            end)
+        else
+            hover(b, PANEL2, PANEL3)
+            press(b, PANEL3, PANEL)
+        end
+        return b
+    end
+
+    -- Two buttons, not three. The copy button only ever copied the link that get
+    -- code had already put on the clipboard, or the key, or the device id, and
+    -- the box already holds the thing worth copying, so it was a second way to do
+    -- something that was already done. Both widths come from the window's own
+    -- width, so the pair always spans it exactly whatever W is: the primary
+    -- button used to be placed at UDim2.fromOffset(1 - 148, 240), a negative
+    -- pixel offset that drew it outside the window hanging off the left edge.
+    local GAP = 12
+    local w_get = math.floor((W - PAD * 2 - GAP) * 0.40)
+    local w_go = (W - PAD * 2 - GAP) - w_get
+    local getkey = button("GetCode", "get code", PAD, w_get, false)
+    local go = button("Go", "activate", PAD + w_get + GAP, w_go, true)
+    assert(PAD + w_get + GAP + w_go + PAD == W, "the buttons do not span the window")
+
+    -- A row of two small buttons that put the fixed links on the clipboard.
+    --
+    -- They copy rather than open. A window that calls OpenUrl on click is three
+    -- lines long and is also the thing an executor's click handler flags, and
+    -- opening a browser from inside a game is not something this window should
+    -- do behind the user's back. Copying puts the link in their hands and lets
+    -- them decide when it opens.
+    local LINK_Y = Y.links
+    local LINK_H = 30
+    local w_link = math.floor((W - PAD * 2 - GAP) / 2)
+    local function linkButton(name, labelText, value, second)
+        local w = second and (W - PAD * 2 - GAP) - w_link or w_link
+        local x = second and (PAD + w_link + GAP) or PAD
+        local b = make("TextButton", {
+            Name = name, Text = labelText, Position = UDim2.fromOffset(x, LINK_Y),
+            Size = UDim2.fromOffset(w, LINK_H), BackgroundColor3 = PANEL2,
+            BorderSizePixel = 0, TextColor3 = DIM, TextSize = 12,
+            Font = Enum.Font.GothamBold, AutoButtonColor = true,
+            TextTruncate = Enum.TextTruncate.AtEnd,
+        }, root)
+        if value == "" then
+            -- Nothing real to copy. The button is not created at all: a control
+            -- that says it has nothing to offer is worse than its absence.
+            b:Destroy()
+            return nil
+        end
+        on(b, "MouseButton1Click", function()
+            local clip = clipboard()
+            if clip and pcall(clip, value) then
+                say(labelText .. " link copied.", GOOD)
+            else
+                say("Could not reach the clipboard in this executor.", BAD)
+            end
+        end)
+        hover(b, PANEL2, PANEL3)
+        return b
+    end
+    -- No image on this button. There was a mark on it and a word in the header,
+    -- both loaded from Roblox and neither of them ours, and both were the window
+    -- asking the network for a decoration. The invite is the button.
+    local b1 = linkButton("LinkDiscord", "discord", DISCORD_URL)
+    if b1 then
+        -- No fill either. A filled button beside two grey ones is a third colour
+        -- in a window that has one, and it reads as somewhere else to go.
+        pcall(function()
+            b1.BackgroundTransparency = 1
+            b1.BorderSizePixel = 1
+            b1.BorderColor3 = LINE
+            b1.AutoButtonColor = false
+            b1.MouseEnter:Connect(function()
+                b1.BackgroundTransparency = 0
+                b1.BackgroundColor3 = PANEL3
+            end)
+            b1.MouseLeave:Connect(function()
+                b1.BackgroundTransparency = 1
+            end)
+            round(b1, 9)
+        end)
+    end
+    local b2 = linkButton("LinkServer", "server", SERVER_URL, true)
+    -- one button on its own, centred, rather than one at the left of an empty row
+    if b1 and not b2 then
+        b1.Position = UDim2.fromOffset(math.floor((W - 140) / 2), Y.links)
+        b1.Size = UDim2.fromOffset(140, LINK_H)
+    end
+
+    -- There is no row of small grey text under the buttons. One used to print
+    -- the code there, which is the widest string in the window and the one piece
+    -- of information nobody could act on: the code is already inside the link
+    -- that was copied, and the key comes back in the field.
+    --
+    -- registered after they are made, because resize() walks this list. Inserted
+    -- one at a time with pairs, never as a literal: b2 is nil while the server
+    -- link is empty, and ipairs stops at the first nil, so {getkey, go, b1, nil}
+    -- would move the first three and leave the fourth where it was.
+    for _, o in pairs({ getkey, go, b1, b2 }) do
+        if o then lower[#lower + 1] = o end
+    end
+
+    -- ---------------------------------------------------- behaviour
+    -- resize is declared before say, which calls it. As two separate local functions
+    -- in the other order, say's reference resolved to a global nil and every
+    -- message raised an error.
+    local resize
+
+    say = function(text, col)
+        status.Text = text
+        status.TextColor3 = col or DIM
+        dot.BackgroundColor3 = col or FAINT
+        -- Roblox lays text out after it is set, so the height is read on the next
+        -- step rather than now, and the window follows it
+        pcall(function()
+            if task.defer then task.defer(function() resize() end)
+            else task.delay(0, function() resize() end) end
+        end)
+    end
+
+    -- Everything that sits under the status line. When the status line grows the
+    -- window grows, and these have to move down by the same amount or a long
+    -- message runs straight over them and the extra height becomes empty space
+    -- at the bottom.
+    -- The window is exactly as tall as the status line needs plus the rest of the
+    -- layout. This is the dynamic part: a one line message gives the short window,
+    -- a three line refusal gives the tall one, and neither is ever clipped.
+    resize = function()
+        local extra = 0
+        pcall(function()
+            -- TextBounds is the height this label's wrapped text actually takes
+            -- and is what the docs give for a TextLabel. AbsoluteContentSize is
+            -- a GuiObject property that also works, and whichever answers first
+            -- wins so an executor that has only one of them still resizes.
+            local h = status.TextBounds and status.TextBounds.Y
+            if type(h) ~= "number" or h <= 0 then
+                h = status.AbsoluteContentSize and status.AbsoluteContentSize.Y
+            end
+            -- a zero means the label has not been laid out yet, not that the
+            -- message needs no room
+            if type(h) == "number" and h > 0 then
+                extra = math.max(0, math.ceil(h) - 48)
+            end
+        end)
+        if extra < 0 then extra = 0 end
+        local want = H + extra
+        -- Everything below the status moves by the difference, not by the whole,
+        -- so a message that goes from one line to three moves the rows once and
+        -- a message that shrinks moves them back.
+        local d = extra - lastExtra
+        if d ~= 0 then
+            for _, o in ipairs(lower) do
+                if o then
+                    o.Position = UDim2.fromOffset(o.Position.X.Offset,
+                                                  o.Position.Y.Offset + d)
+                end
+            end
+            lastExtra = extra
+        end
+        -- Kept, because the wheel hit test and the drag clamp measure the window
+        -- and they were reading the design height H. After a tall refusal they
+        -- were short by exactly the extra, so the bottom of the window stopped
+        -- resizing and stopped being draggable.
+        liveH = want
+        if root.Size.Y.Offset ~= want then
+            root.Size = UDim2.fromOffset(W, want)
+        end
+    end
+
+    local function closegui()
+        closed = true
+        -- Destroying the gui kills the connections attached to it. The
+        -- UserInputService ones are not attached to it, so they survive, and
+        -- every run of the loader used to add three more that kept firing at a
+        -- window that was no longer there.
+        for _, c in ipairs(CONN) do pcall(function() c:Disconnect() end) end
+        CONN = {}
+        pcall(function() gui:Destroy() end)
+    end
+
+    local uis
+    pcall(function() uis = game:GetService("UserInputService") end)
+    on(close, "MouseButton1Click", closegui)
+
+    -- Drag. This is the pattern Roblox documents and the one every GUI library
+    -- in the platform uses: the header's own InputBegan starts it, the pointer
+    -- delta moves it, and every InputEnded stops it.
+    --
+    -- It used to be driven from UserInputService with the press located by hand
+    -- against rectangles measured out of the layout: the whole window was a
+    -- handle, so there were ten of those rectangles, and every one of them was a
+    -- number that could be wrong in a way that made the window refuse to move.
+    -- The header is one object that Roblox already knows the pointer landed on.
+    --
+    -- The window keeps its scale position, so the delta is applied to that and
+    -- not to an offset, and the grab point comes from where the window actually
+    -- is rather than from Position, whose offset is zero for a scale position.
+    local DragStartX, DragStartY, StartScaleX, StartScaleY
+
+    local function beginDrag(i)
+        if not i then return end
+        if i.UserInputType ~= Enum.UserInputType.MouseButton1
+            and i.UserInputType ~= Enum.UserInputType.Touch then return end
+        -- a focused text box means they are typing, not dragging
+        if uis:GetFocusedTextBox() then return end
+        local ax, ay = topLeft()
+        local pos = root.Position
+        DragStartX, DragStartY = i.Position.X, i.Position.Y
+        StartScaleX, StartScaleY = pos.X.Scale, pos.Y.Scale
+        dragging = true
+        moved = true
+        pcall(function() head.MouseIcon = "grabbing" end)
+    end
+
+    -- The header is Active, so the title and the subtitle sitting on it hand the
+    -- press down to it instead of swallowing it, and the close button is a child
+    -- of the header and takes the press first, which is why it does not drag.
+    on(head, "InputBegan", beginDrag)
+
+    if uis then
+        on(uis, "InputBegan", function(i)
+            if not i then return end
+            if i.KeyCode == Enum.KeyCode.Escape then
+                -- not while the field has focus, and not when the game already
+                -- dealt with it: escape closed the window while somebody was typing
+                -- a key into it, and again whenever a menu was open
+                if uis:GetFocusedTextBox() then return end
+                if i.gameProcessed then return end
+                closegui()
+            end
+        end)
+        on(uis, "InputChanged", function(i)
+            if not i then return end
+            -- the wheel, first: it arrives on the same signal and must not be
+            -- treated as a move
+            if i.UserInputType == Enum.UserInputType.MouseWheel then
+                if not scaler then return end
+                -- Only over the window, and only when the game has not already
+                -- used the wheel. It resized from anywhere on the screen before,
+                -- and stole the zoom from the game.
+                if i.gameProcessed then return end
+                local wx, wy = topLeft()
+                local sxw = scaler.Scale
+                local p = i.Position
+                if p.X < wx or p.X > wx + W * sxw then return end
+                if p.Y < wy or p.Y > wy + liveH * sxw then return end
+                local step = (i.Position.Z > 0) and 0.06 or -0.06
+                scaler.Scale = math.clamp(scaler.Scale + step, 0.42, 1.4)
+                -- clamped even when nothing is being dragged: a window made
+                -- larger while sitting near an edge would otherwise grow straight
+                -- off the screen
+                clamping = true
+                keepOnScreen()
+                clamping = false
+                return
+            end
+            if not dragging then return end
+            if i.UserInputType ~= Enum.UserInputType.MouseMovement
+                and i.UserInputType ~= Enum.UserInputType.Touch then return end
+            -- The pointer delta since the press, added to the scale the window
+            -- had when it was pressed. Written once, clamped before writing, and
+            -- there is no pixel term anywhere in the result for the scale to
+            -- multiply.
+            local vw, vh = viewSize()
+            if vw <= 0 or vh <= 0 then return end
+            placeClamped(StartScaleX * vw + (i.Position.X - DragStartX),
+                              StartScaleY * vh + (i.Position.Y - DragStartY))
+        end)
+        on(uis, "InputEnded", function(i)
+            if not i then return end
+            if i.UserInputType == Enum.UserInputType.MouseButton1
+                or i.UserInputType == Enum.UserInputType.Touch then
+                dragging = false
+                pcall(function() head.MouseIcon = "grab" end)
+            end
+        end)
+    end
+
+    -- Refit when the viewport changes: a phone rotated, or a desktop window
+    -- resized. A UIScale set once and never revisited meant the window kept the
+    -- fit it was given when it opened, which is wrong for as long as it stays
+    -- open. GetPropertyChangedSignal takes an argument, so it cannot use on().
+    pcall(function()
+        local cam = workspace and workspace.CurrentCamera
+        if cam then
+            local c = cam:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+                fit()
+            end)
+            CONN[#CONN + 1] = c
+        else
+            -- the camera is usually not there yet when a script runs on join, and
+            -- the window was then fitted against the fallback size with nothing
+            -- to correct it afterwards
+            local c = workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
+                if workspace.CurrentCamera then fit() end
+            end)
+            CONN[#CONN + 1] = c
+            task.delay(0.5, fit)
+        end
+    end)
+    fit()
+
+    -- How long a key has left, counted down in the status line.
+    --
+    -- The moment comes from the service, not from the clock on this machine, so
+    -- a window opened tomorrow counts down to tomorrow rather than to one hour
+    -- from whenever it happened to be built. os.time is used only to subtract
+    -- from it, and a clock set wrong moves the count by exactly as much as it is
+    -- wrong by, which is why the service is asked again when the window opens.
+    local EXPIRES_AT = 0
+
+    local function leftText(secs)
+        secs = math.max(0, math.floor(secs or 0))
+        if secs <= 0 then return "expired" end
+        local d, h, m = math.floor(secs / 86400), math.floor(secs % 86400 / 3600),
+                         math.floor(secs % 3600 / 60)
+        if d > 0 then return string.format("%dd %dh left", d, h) end
+        if h > 0 then return string.format("%dh %dm left", h, m) end
+        return string.format("%dm left", m)
+    end
+
+    local function setExpiry(at)
+        EXPIRES_AT = tonumber(at) or 0
+    end
+
+    local busy = false
+    local function lock(v)
+        busy = v
+        -- buttons were left live during a request, so a second press started a
+        -- second session and the user ended up with two codes and one box
+        getkey.Text = v and "asking" or "get code"
+        getkey.Active = not v
+        go.Active = not v
+    end
+
+    -- No loop. The service is asked once, when the window opens, and the count
+    -- down it hands back is drawn once from that. Nothing here repeats, so the
+    -- window does not sit there talking to the service every half minute for a
+    -- number it already has, and closing and reopening it does not restart
+    -- anything. The service is still the only thing that decides whether a key
+    -- works; this line is a number on screen.
+    -- the stepper follows the box, so the window never has to be told where it is.
+    -- This one takes an argument, so it cannot go through on()
+    pcall(function()
+        box:GetPropertyChangedSignal("Text"):Connect(function()
+            local t = trim(box.Text)
+            if t == "" then setStep(1)
+            elseif t:sub(1, 3) == "v1." then setStep(3)
+            else setStep(2) end
+        end)
+    end)
+
+    clipboard = function()
+        local g = getgenv and getgenv()
+        return (type(g) == "table" and rawget(g, "setclipboard")) or _G.setclipboard
+    end
+
+    -- Whether the body is the json the service sends, or a page from something
+    -- in front of it. An html error page was reported as "no code given", which
+    -- sends the user looking for a code problem when the server never answered.
+    -- Ask the real decoder first, and only scan when there is not one or it did
+    -- not like the body. The scanner matches a name at any depth and turns
+    -- \uXXXX into a question mark; HttpService does neither.
+    local function readField(res, k)
+        local t = jsonDecode(res)
+        if t then
+            local v = t[k]
+            if type(v) == "string" then return v end
+            -- A boolean counts as an answer.
+            --
+            -- The service sends "ok" as a real boolean and readField only ever
+            -- handed back strings, so every field asking whether the key was good
+            -- came back empty. That made a perfectly good key read as refused and
+            -- the window cleared it, which is the one thing the store was built to
+            -- stop happening. The scanner below cannot find a bare true either.
+            if type(v) == "boolean" then return v and "true" or "false" end
+            -- A number counts as an answer too, and this is the one that decides
+            -- whether the window can say how long a key has left.
+            --
+            -- Every expiry the service sends is a unix time, which is a number in
+            -- the reply and never a string, so readField came back empty for all
+            -- of them and the moment it counts to was always zero. The window said
+            -- the key had already expired on the same key it had just accepted.
+            if type(v) == "number" then return tostring(v) end
+            -- the decoder exists but did not give us this one. Fall through to the
+            -- scanner rather than return nothing: an executor with a stubbed or
+            -- half working JSONDecode would otherwise read every reply as empty.
+        end
+        return field(res, k)
+    end
+
+    local function isJson(s)
+        return type(s) == "string" and s:sub(1, 1) == "{"
+    end
+
+    local function why(what)
+        if what == nil or what == "" then
+            return "The server did not answer properly. Try again in a moment."
+        end
+        if what == "not json" then
+            return "The server sent a page instead of a reply. Try again in a moment."
+        end
+        if what == "no post" then
+            return "This executor cannot send POST requests. Try a different one."
+        end
+        if what == "no answer" then
+            return "No answer from the server. Check your connection."
+        end
+        if what == "unknown or expired code" then
+            return "No such code. Press get code for a new one."
+        end
+        if what == "code already used" then
+            return "That code was already spent. Press get code for a new one."
+        end
+        if what == "code expired" then
+            return "The code timed out. Press get code for a new one."
+        end
+        if what == "key already activated" then
+            return "Someone already activated that key. It cannot be used twice."
+        end
+        if what == "code has not been approved yet" or what == "offer not completed yet"
+            or what == "not approved" then
+            return "You have not finished the offer yet. Open the link and complete it."
+        end
+        if what == "code was issued for another game or account" then
+            return "That code is for another game or account."
+        end
+        if what == "bad signature" or what == "malformed" then
+            return "That is not a Drakthon key."
+        end
+        if what == "expired" then
+            return "That key is no longer valid."
+        end
+        if what == "not yet valid" then
+            return "That key is not active yet."
+        end
+        if what == "revoked" then
+            return "That key was revoked."
+        end
+        if what == "rate limit" then
+            return "Too many tries. Wait before trying again."
+        end
+        if what == "roblox unreachable" then
+            return "Roblox did not answer. Try again in a moment."
+        end
+        if what == "game not on the list" then
+            return "This game is not on the list."
+        end
+        -- Only the account is judged now, so this only has to cover a missing or
+        -- malformed user id. It used to also cover the place and the job, and it
+        -- told people to use a different executor, which never fixed anything: a
+        -- private server, an unpublished game and an executor that reports the
+        -- place as 0 for the first second of a join were all refused, and all of
+        -- them are the same person on a different door.
+        if what:find("user id", 1, true) or what:find("missing", 1, true) then
+            return "This executor is not reporting the account. Try a different one."
+        end
+        if what:find("account", 1, true) or what:find("banned", 1, true) then
+            return "This account cannot use the gate."
+        end
+        return "Refused: " .. what
+    end
+
+    on(getkey, "MouseButton1Click", function()
+        if busy then return end
+        lock(true)
+        dot.BackgroundColor3 = ACCENT
+        say("Asking for a code for this game and this account.", DIM)
+
+        local res, problem = call("POST", "/api/request", jsonenc({
+            device = dev, place = game.PlaceId, job = game.JobId, user = uid(),
+        }))
+
+        lock(false)
+        go.Text = "activate"
+        if not res then
+            dot.BackgroundColor3 = BAD
+            say(why(problem), BAD)
+            return
+        end
+        if not isJson(res) then
+            dot.BackgroundColor3 = BAD
+            say(why("not json"), BAD)
+            return
+        end
+        -- trim maps nil to "", so the test has to be against the empty string and
+        -- not against nil. It did not, and a reply with no code in it put an empty
+        -- code in the box and reported a copied link that pointed at nothing.
+        local code = trim(readField(res, "code"))
+        if code == "" then
+            dot.BackgroundColor3 = BAD
+            say(why(readField(res, "error") or readField(res, "reason") or "no code given"), BAD)
+            return
+        end
+        setStep(2)
+        local clip = clipboard()
+        local link = linkfor(code)
+        dot.BackgroundColor3 = GOOD
+        -- Nothing about the code goes on screen. It is already in the link that
+        -- was just copied, and the key comes back in the box. A line reading
+        -- "code abc123" under the buttons told the user nothing they could act
+        -- on and was the widest string in the window.
+        if clip and pcall(clip, link) then
+            say("Link copied. Open it in a browser, finish the offer, then paste "
+                .. "your key in the box and press activate.", GOOD)
+        else
+            say("Copy this link and open it: " .. link, GOOD)
+        end
+    end)
+
+    -- Spending whatever is in the field. Named rather than left inside the click
+    -- handler because it is also run on open, when this account already has a
+    -- key: it checks, it downloads and it runs, and the only thing that changes
+    -- is that nobody had to press anything.
+    -- whether this spend was started by the window on its own, in which case a
+    -- refused key is cleared and the field emptied rather than left on screen
+    local auto = false
+
+    -- Did the service answer, and did the answer say no? Everything else, a
+    -- timeout, a dropped connection, a page that came back instead of json, is
+    -- something that will be worth retrying, and none of it is a reason to throw
+    -- a key away.
+    local function refused(err)
+        local t = tostring(err or ""):lower()
+        return t:find("key already activated", 1, true) ~= nil
+            or t:find("expired", 1, true) ~= nil
+            or t:find("revoked", 1, true) ~= nil
+            or t:find("signature", 1, true) ~= nil
+            or t:find("malformed", 1, true) ~= nil
+            or t:find("forged", 1, true) ~= nil
+    end
+
+    local function spend()
+        if busy then return end
+        -- the box holds whatever the page gave: a key after the offer is
+        -- finished, or the session code if activate is pressed early. The server
+        -- tells them apart, so send it unchanged. Whitespace is dropped because a
+        -- pasted key usually arrives with a trailing newline.
+        local entry = trim(box.Text)
+        if entry == "" then
+            dot.BackgroundColor3 = BAD
+            say("Nothing in the box. Press get code, finish the offer, then paste "
+                .. "the key here.", BAD)
+            return
+        end
+
+        lock(true)
+        go.Text = "checking"
+        dot.BackgroundColor3 = ACCENT
+        local isKey = entry:sub(1, 3) == "v1."
+        say(isKey and "Checking the key ..."
+            or "Spending the code.", DIM)
+
+        local u = uid()
+        local res, problem = call("POST", "/api/claim", jsonenc({
+            entry = entry, device = dev,
+            place = game.PlaceId, job = game.JobId, user = u,
+        }))
+
+        if not res then
+            -- No answer is not a refusal. The key is only forgotten when the
+            -- service said no, because a dropped connection during the automatic
+            -- check used to throw away a key that was still perfectly good, and
+            -- the next run had nothing to try.
+            lock(false)
+            go.Text = "activate"
+            dot.BackgroundColor3 = BAD
+            say(why(problem), BAD)
+            if auto and refused(problem) then
+                forgetKey() box.Text = "" setStep(1)
+            end
+            return
+        end
+
+        local ticket, key
+        if isJson(res) then
+            ticket = readField(res, "ticket")
+            key = readField(res, "key")
+        end
+        if not ticket or not key then
+            lock(false)
+            go.Text = "activate"
+            dot.BackgroundColor3 = BAD
+            local said = isJson(res)
+                and (readField(res, "error") or readField(res, "reason") or "refused")
+                or "not json"
+            say(why(said), BAD)
+            if auto and isJson(res) and refused(said) then
+                forgetKey() box.Text = "" setStep(1)
+            end
+            return
+        end
+
+        setExpiry(readField(res, "expires") or readField(res, "key_expires"))
+        rememberKey(key, u, EXPIRES_AT)
+
+        go.Text = "loading"
+        dot.BackgroundColor3 = ACCENT
+        -- The count down goes in this line rather than being drawn and then
+        -- overwritten by the next statement, which is how it ended up never on
+        -- screen at all. The window closes once the Hub is up, so this is the
+        -- one moment somebody reads how long their key has left.
+        say("Accepted. Fetching the scripts.", GOOD)
+
+        local function pull(name)
+            local src = call("GET", "/get/" .. name .. "?t=" .. enc(ticket)
+                .. "&d=" .. enc(dev) .. "&p=" .. enc(game.PlaceId)
+                .. "&u=" .. enc(u), nil, T_FILE)
+            if not src then return false, name .. " could not be downloaded" end
+            -- a refused file arrives as a small json object or an error page, and
+            -- loadstring would report that as a compile failure. Only the first
+            -- character and a real html prolog count: the hub starts with "--[[",
+            -- which contains a "<" but is perfectly good source.
+            local first = src:sub(1, 1)
+            if first == "{" or src:sub(1, 14):lower() == "<!doctype html" then
+                local server = readField(src, "error") or readField(src, "reason")
+                return false, server and (name .. ": " .. server)
+                    or (name .. " came back as an error")
+            end
+            local ld = loadstring or load
+            local fn = ld and ld(src, "@" .. name, "t")
+            if type(fn) ~= "function" then return false, name .. " did not compile" end
+            -- Run it under a pcall. Spawned bare, an error in the script it just
+            -- loaded went to the executor's log and the window said "Running.",
+            -- which is the one moment the user needed to be told.
+            task.spawn(function()
+                local ran, err = pcall(fn)
+                if not ran and not closed then
+                    say(name .. " stopped: " .. tostring(err):sub(1, 90), BAD)
+                end
+            end)
+            return true
+        end
+
+        -- The Hub and nothing else. The Spy used to be fetched and run here too,
+        -- so one activate started two programs and the Hub's window arrived
+        -- underneath a second UI. It is still published, and still behind the
+        -- same gate, but loading it is a separate decision the user makes.
+        local bad = nil
+        for _, name in ipairs({ "drakthon-ui.lua" }) do
+            local good, reason = pull(name)
+            if not good and not bad then bad = reason end
+        end
+
+        lock(false)
+        if bad then
+            go.Text = "activate"
+            dot.BackgroundColor3 = BAD
+            say(bad, BAD)
+            return
+        end
+
+        go.Text = "done"
+        dot.BackgroundColor3 = GOOD
+        -- three steps, and this finishes all of them; the loop compares i < n so
+        -- any n past the end marks the lot
+        setStep(#cells + 1)
+        say("Running.", GOOD)
+        -- The gate gets out of the way as soon as it has done its job. It used to
+        -- sit on top of the Hub for three seconds with "The Hub takes a few
+        -- seconds to come up" written on it, which is the window the user was
+        -- trying to get rid of, covering the thing they were waiting for.
+        closegui()
+    end
+
+    on(go, "MouseButton1Click", spend)
+
+    -- An account that already bought a key is neither asked for one again nor
+    -- asked to press anything.
+    --
+    -- The key comes out of somewhere that survives closing Roblox, closing the
+    -- phone and coming back, and before it is used the service is asked whether
+    -- it is still good and until when. Asking the service rather than trusting
+    -- the stored moment is the point: a key that ran out while the executor was
+    -- closed is cleared here and the window asks for a new one, instead of
+    -- trying it and failing somewhere less obvious.
+    do
+        local saved, savedUntil = recallKey()
+        if saved then
+            box.Text = saved
+            setStep(3)
+            setExpiry(savedUntil)
+            say("Asking about the key you used before ..", DIM)
+            task.defer(function()
+                local u = uid()
+                local res = call("POST", "/api/peek", jsonenc({
+                    key = saved, device = dev,
+                    place = game.PlaceId, job = game.JobId, user = u,
+                }))
+                if not res or not isJson(res) then
+                    -- no answer is not a refusal. The key is kept and used; a
+                    -- dropped connection must not throw away one that is good.
+                    say("No answer from the server. Trying the key anyway ..", DIM)
+                    auto = true spend() auto = false
+                    return
+                end
+                local ok = readField(res, "ok")
+                if ok == "true" then
+                    -- drawn once, here, and not again. The window does not
+                    -- re-ask while it sits open.
+                    local good = readField(res, "expires") or savedUntil
+                    setExpiry(good)
+                    rememberKey(saved, u, good)
+                    -- the time left is said here and only here: the window found a
+                    -- key it already had and is about to use it without asking.
+                    -- On a key being redeemed now there is nothing to report, the
+                    -- person just bought it and knows.
+                    local left = tonumber(good) or 0
+                    say("Key accepted, " .. leftText(left - os.time())
+                        .. ". Starting.", GOOD)
+                    auto = true spend() auto = false
+                    return
+                end
+                -- Only a verdict throws the key away. 503 with retry, a 429 and a
+                -- Roblox that did not answer are all the service saying "not
+                -- now", and they used to arrive here and be read as a dead key:
+                -- the file was deleted and a buyer who had paid was told to buy
+                -- again because Roblox's user API was slow for one second.
+                local said = readField(res, "reason") or ""
+                if not refused(said) then
+                    say(why(said) .. " Trying again ..", DIM)
+                    auto = true spend() auto = false
+                    return
+                end
+                forgetKey() box.Text = "" setStep(1)
+                say(why(said) .. " Run get code for a new one.", BAD)
+            end)
+        end
+    end
+
+    return gui, dev, scaler
+end
+
+local ok, err = pcall(build)
+if not ok then
+    -- A failure after the ScreenGui was created leaves a half built window on the
+    -- screen, still parented and still taking clicks. build() throws before it
+    -- returns the gui, so it is found and cleared rather than handed back.
+    pcall(function()
+        for _, c in ipairs(game:GetService("CoreGui"):GetChildren()) do
+            if c.Name == "DrakthonGate" then c:Destroy() end
+        end
+    end)
+    -- A window is nicer, but a broken one helps nobody. Fall back to the log, and
+    -- say what went wrong: the old fallback swallowed the error, so a broken
+    -- window looked identical to a broken executor.
+    warn("[Drakthon] the window could not be built: " .. tostring(err))
+    warn("[Drakthon] device " .. device() ..
+         "  -  run the loader again once this is fixed")
+end
